@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import uvciLogo from "@/uvci.png";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -41,7 +40,7 @@ export default function LoginPage() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 relative">
           <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-white/10 shadow-elegant">
-            <Image src={uvciLogo} alt="UVCI" fill className="object-contain" />
+            <Image src="/images/uvci.png" alt="UVCI" fill className="object-contain" />
           </div>
           <div className="leading-tight">
             <div className="font-display font-semibold text-lg">PCT UVCI</div>
@@ -61,7 +60,7 @@ export default function LoginPage() {
           </p>
           <div className="mt-8 flex items-center gap-2 text-xs text-white/60">
             <ShieldCheck className="h-4 w-4" />
-            Connexion sécurisée — accès par rôle
+            Connexion sécurisée — accès réservé aux adresses @uvci.edu.ci
           </div>
         </div>
 
@@ -77,7 +76,7 @@ export default function LoginPage() {
           <Card className="p-8 shadow-elegant">
             <div className="flex flex-col items-center justify-center gap-3 mb-6 text-center">
               <div className="relative h-24 w-24 overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-primary/20">
-                <Image src={uvciLogo} alt="UVCI" fill className="object-contain" />
+                <Image src="/images/uvci.png" alt="UVCI" fill className="object-contain" />
               </div>
               <div>
                 <div className="font-display text-lg font-semibold">PCT UVCI</div>

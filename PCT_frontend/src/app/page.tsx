@@ -6,7 +6,6 @@ import {
   Users, BookOpen, Clock, ShieldCheck,
   CheckCircle2, BarChart3, ArrowRight, FileText,
 } from "lucide-react";
-import uvciLogo from "@/uvci.png";
 
 export default function Landing() {
   return (
@@ -14,9 +13,9 @@ export default function Landing() {
       {/* Header */}
       <header className="sticky top-0 z-30 bg-background/80 backdrop-blur border-b">
         <div className="max-w-7xl mx-auto h-16 px-6 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="relative h-9 w-9 overflow-hidden rounded-lg bg-white/10 shadow-elegant">
-              <Image src={uvciLogo} alt="UVCI" fill className="object-contain" />
+          <Link href="/" className="flex items-center gap-3">
+            <div className="relative h-14 w-14 overflow-hidden rounded-3xl shadow-elegant ring-2 ring-primary/30">
+              <Image src="/images/uvciL.png" alt="UVCI" fill className="object-contain" />
             </div>
             <div className="leading-tight">
               <div className="font-display font-semibold text-sm">PCT UVCI</div>
@@ -85,8 +84,8 @@ export default function Landing() {
             <Card className="relative shadow-elegant overflow-hidden border-border/80">
               <div className="bg-sidebar text-white p-4 flex items-center gap-3">
                 <div className="relative h-7 w-7 overflow-hidden rounded-md bg-white/10">
-                <Image src={uvciLogo} alt="UVCI" fill className="object-contain" />
-              </div>
+                  <Image src="/images/uvci.png" alt="UVCI" fill className="object-contain" />
+                </div>
                 <div className="text-sm font-medium">Tableau de bord — Administrateur</div>
                 <div className="ml-auto flex gap-1">
                   {[0,1,2].map(i => <span key={i} className="h-2 w-2 rounded-full bg-white/30" />)}

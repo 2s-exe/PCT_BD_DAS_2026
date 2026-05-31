@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import type { Role } from "@/types";
-import uvciLogo from "@/uvci.png";
 
 const NAV: Record<Role, { href: string; label: string; icon: any }[]> = {
   admin: [
@@ -61,7 +60,7 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
       <aside className="hidden md:flex w-64 flex-col bg-sidebar text-sidebar-foreground">
         <div className="h-16 flex items-center gap-2 px-5 border-b border-sidebar-border">
           <div className="relative h-9 w-9 overflow-hidden rounded-lg bg-white/10 shadow-elegant">
-            <Image src={uvciLogo} alt="UVCI" fill className="object-contain" />
+            <Image src="/images/uvci.png" alt="UVCI" fill className="object-contain" />
           </div>
           <div className="leading-tight">
             <div className="font-display font-semibold text-sm text-white">PCT UVCI</div>
