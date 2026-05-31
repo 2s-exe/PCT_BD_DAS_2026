@@ -74,13 +74,13 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
 
           <Card className="p-8 shadow-elegant">
-            <div className="flex flex-col items-center justify-center gap-3 mb-6 text-center">
+            <div className="flex items-center justify-center gap-4 mb-6 text-left">
               <div className="relative h-24 w-24 overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-primary/20">
                 <Image src="/images/uvci.png" alt="UVCI" fill className="object-contain" />
               </div>
               <div>
                 <div className="font-display text-lg font-semibold">PCT UVCI</div>
-                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                <div className="text-[9px] uppercase tracking-wider text-muted-foreground">
                   Gestion des heures d'enseignement
                 </div>
               </div>
@@ -88,8 +88,8 @@ export default function LoginPage() {
 
             <h1 className="font-display text-2xl font-semibold text-center">Connexion</h1>
 
-            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-              <div className="space-y-2">
+            <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+              <div className="space-y-4">
                 <Label htmlFor="login">Email</Label>
                 <Input
                   id="login"
@@ -101,7 +101,7 @@ export default function LoginPage() {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Mot de passe</Label>
                   <a href="#" className="text-xs text-primary hover:underline">
