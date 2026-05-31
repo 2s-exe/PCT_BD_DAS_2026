@@ -1,10 +1,12 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
-  GraduationCap, Users, BookOpen, Clock, ShieldCheck,
+  Users, BookOpen, Clock, ShieldCheck,
   CheckCircle2, BarChart3, ArrowRight, FileText,
 } from "lucide-react";
+import uvciLogo from "@/uvci.png";
 
 export default function Landing() {
   return (
@@ -13,8 +15,8 @@ export default function Landing() {
       <header className="sticky top-0 z-30 bg-background/80 backdrop-blur border-b">
         <div className="max-w-7xl mx-auto h-16 px-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-lg bg-gradient-primary flex items-center justify-center">
-              <GraduationCap className="h-5 w-5 text-white" />
+            <div className="relative h-9 w-9 overflow-hidden rounded-lg bg-white/10 shadow-elegant">
+              <Image src={uvciLogo} alt="UVCI" fill className="object-contain" />
             </div>
             <div className="leading-tight">
               <div className="font-display font-semibold text-sm">PCT UVCI</div>
@@ -82,9 +84,9 @@ export default function Landing() {
             <div className="absolute -inset-4 bg-gradient-primary opacity-10 blur-3xl rounded-full" />
             <Card className="relative shadow-elegant overflow-hidden border-border/80">
               <div className="bg-sidebar text-white p-4 flex items-center gap-3">
-                <div className="h-7 w-7 rounded-md bg-gradient-primary flex items-center justify-center">
-                  <GraduationCap className="h-4 w-4" />
-                </div>
+                <div className="relative h-7 w-7 overflow-hidden rounded-md bg-white/10">
+                <Image src={uvciLogo} alt="UVCI" fill className="object-contain" />
+              </div>
                 <div className="text-sm font-medium">Tableau de bord — Administrateur</div>
                 <div className="ml-auto flex gap-1">
                   {[0,1,2].map(i => <span key={i} className="h-2 w-2 rounded-full bg-white/30" />)}

@@ -1,9 +1,10 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, BookOpen, ClipboardList, Clock,
-  FileBarChart, Settings, GraduationCap, CheckSquare,
+  FileBarChart, Settings, CheckSquare,
   PlusCircle, Bell, Search, LogOut,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -12,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import type { Role } from "@/types";
+import uvciLogo from "@/uvci.png";
 
 const NAV: Record<Role, { href: string; label: string; icon: any }[]> = {
   admin: [
@@ -58,8 +60,8 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
       {/* Sidebar */}
       <aside className="hidden md:flex w-64 flex-col bg-sidebar text-sidebar-foreground">
         <div className="h-16 flex items-center gap-2 px-5 border-b border-sidebar-border">
-          <div className="h-9 w-9 rounded-lg bg-gradient-primary flex items-center justify-center">
-            <GraduationCap className="h-5 w-5 text-white" />
+          <div className="relative h-9 w-9 overflow-hidden rounded-lg bg-white/10 shadow-elegant">
+            <Image src={uvciLogo} alt="UVCI" fill className="object-contain" />
           </div>
           <div className="leading-tight">
             <div className="font-display font-semibold text-sm text-white">PCT UVCI</div>
