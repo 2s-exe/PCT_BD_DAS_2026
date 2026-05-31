@@ -75,7 +75,7 @@ export default function LoginPage() {
 
           <Card className="p-8 shadow-elegant">
             <div className="flex items-center justify-center gap-4 mb-6 text-left">
-              <div className="relative h-24 w-24 overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-primary/20">
+              <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-primary/20">
                 <Image src="/images/uvci.png" alt="UVCI" fill className="object-contain" />
               </div>
               <div>
