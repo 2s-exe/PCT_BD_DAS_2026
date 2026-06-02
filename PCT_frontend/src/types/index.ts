@@ -100,6 +100,18 @@ export interface Validation {
   observations?: string;
 }
 
+export interface Secretaire {
+  id: number;
+  nom: string;
+  prenom: string;
+  nom_complet: string;
+  email: string;
+  telephone?: string;
+  login: string;
+  actif: boolean;
+  created_at: string;
+}
+
 export interface Utilisateur {
   id: number;
   login: string;

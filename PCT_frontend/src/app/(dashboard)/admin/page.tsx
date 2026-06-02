@@ -11,9 +11,9 @@ import {
 } from "recharts";
 
 const dept = [
-  { name: "Informatique", h: 4820 }, { name: "Mathématiques", h: 3950 },
-  { name: "Gestion", h: 4210 },      { name: "Lettres", h: 2890 },
-  { name: "Sciences éco.", h: 3640 },{ name: "Droit", h: 3120 },
+  { name: "Info.",    h: 4820 }, { name: "Maths",   h: 3950 },
+  { name: "Gestion", h: 4210 }, { name: "Lettres",  h: 2890 },
+  { name: "Éco.",    h: 3640 }, { name: "Droit",    h: 3120 },
 ];
 
 const monthly = [
@@ -23,10 +23,10 @@ const monthly = [
 ];
 
 const activity = [
-  { t: "Validation lot avril", who: "Mme. Bamba (Sec.)", time: "il y a 12 min", tone: "success" },
-  { t: "Dépassement détecté — Pr. Diallo", who: "Système", time: "il y a 1 h", tone: "warning" },
-  { t: "Nouvel enseignant — Dr. Kouamé", who: "Admin", time: "il y a 3 h", tone: "info" },
-  { t: "Export rapport mensuel mars", who: "Vous", time: "hier", tone: "default" },
+  { t: "Validation lot avril",         who: "Mme. Bamba (Sec.)", time: "il y a 12 min", tone: "success" },
+  { t: "Dépassement détecté — Pr. Diallo", who: "Système",       time: "il y a 1 h",   tone: "warning" },
+  { t: "Nouvel enseignant — Dr. Kouamé",   who: "Admin",         time: "il y a 3 h",   tone: "info" },
+  { t: "Export rapport mensuel mars",      who: "Vous",          time: "hier",          tone: "default" },
 ];
 
 export default function AdminDashboard() {
@@ -37,34 +37,42 @@ export default function AdminDashboard() {
         description="Pilotage global des activités pédagogiques — Année 2024-2025"
         actions={
           <>
-            <Button variant="outline"><Download className="h-4 w-4 mr-2" />Exporter</Button>
-            <Button className="bg-gradient-primary text-white hover:opacity-95">Nouveau rapport</Button>
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Exporter</span>
+            </Button>
+            <Button className="bg-gradient-primary text-white hover:opacity-95" size="sm">
+              <span className="hidden sm:inline">Nouveau rapport</span>
+              <span className="sm:hidden">Rapport</span>
+            </Button>
           </>
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Enseignants"    value="1 248"    delta="+24 ce mois"   icon={Users}        tone="primary" />
-        <StatCard label="Heures totales" value="84 560 h" delta="+8.2% vs N-1"  icon={Clock}        tone="info" />
-        <StatCard label="Heures validées"value="72 120 h" delta="85% du volume" icon={CheckCircle2} tone="success" />
-        <StatCard label="En attente"     value="1 840 h"  delta="42 activités"  icon={AlertTriangle} tone="warning" />
+      {/* KPIs */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Enseignants"     value="1 248"    delta="+24 ce mois"   icon={Users}        tone="primary" />
+        <StatCard label="Heures totales"  value="84 560 h" delta="+8.2% vs N-1"  icon={Clock}        tone="info" />
+        <StatCard label="Validées"        value="72 120 h" delta="85% du volume" icon={CheckCircle2} tone="success" />
+        <StatCard label="En attente"      value="1 840 h"  delta="42 activités"  icon={AlertTriangle} tone="warning" />
       </div>
 
+      {/* Graphiques */}
       <div className="grid gap-4 lg:grid-cols-3 mt-6">
-        <Card className="p-6 lg:col-span-2 shadow-soft">
-          <div className="flex items-center justify-between mb-4">
+        <Card className="p-4 md:p-6 lg:col-span-2 shadow-soft">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <div>
-              <h3 className="font-display font-semibold">Heures par département</h3>
+              <h3 className="font-display font-semibold text-sm md:text-base">Heures par département</h3>
               <p className="text-xs text-muted-foreground">Cumul depuis septembre 2024</p>
             </div>
             <Badge variant="secondary">6 départements</Badge>
           </div>
-          <div className="h-72">
+          <div className="h-56 md:h-72">
             <ResponsiveContainer>
-              <BarChart data={dept}>
+              <BarChart data={dept} margin={{ left: -10, right: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip />
                 <Bar dataKey="h" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
               </BarChart>
@@ -72,15 +80,15 @@ export default function AdminDashboard() {
           </div>
         </Card>
 
-        <Card className="p-6 shadow-soft">
-          <h3 className="font-display font-semibold">Évolution mensuelle</h3>
+        <Card className="p-4 md:p-6 shadow-soft">
+          <h3 className="font-display font-semibold text-sm md:text-base">Évolution mensuelle</h3>
           <p className="text-xs text-muted-foreground">Heures déclarées</p>
-          <div className="h-56 mt-4">
+          <div className="h-44 md:h-56 mt-4">
             <ResponsiveContainer>
-              <LineChart data={monthly}>
+              <LineChart data={monthly} margin={{ left: -10, right: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="m" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
+                <XAxis dataKey="m" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
                 <Tooltip />
                 <Line type="monotone" dataKey="h" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3 }} />
               </LineChart>
@@ -95,34 +103,35 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
+      {/* Activité + Alertes */}
       <div className="grid gap-4 lg:grid-cols-3 mt-6">
-        <Card className="p-6 lg:col-span-2 shadow-soft">
+        <Card className="p-4 md:p-6 lg:col-span-2 shadow-soft">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-display font-semibold">Activité récente</h3>
-            <Button variant="link" className="text-primary px-0">Tout voir</Button>
+            <h3 className="font-display font-semibold text-sm md:text-base">Activité récente</h3>
+            <Button variant="link" className="text-primary px-0 text-sm">Tout voir</Button>
           </div>
           <ul className="divide-y">
             {activity.map((a, i) => (
               <li key={i} className="py-3 flex items-center gap-3">
-                <div className={`h-2 w-2 rounded-full ${
+                <div className={`h-2 w-2 shrink-0 rounded-full ${
                   a.tone === "success" ? "bg-green-500" :
                   a.tone === "warning" ? "bg-amber-500" :
                   a.tone === "info"    ? "bg-blue-500"  : "bg-muted-foreground"
                 }`} />
-                <div className="flex-1">
-                  <div className="text-sm font-medium">{a.t}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">{a.t}</div>
                   <div className="text-xs text-muted-foreground">{a.who}</div>
                 </div>
-                <div className="text-xs text-muted-foreground">{a.time}</div>
+                <div className="text-xs text-muted-foreground shrink-0">{a.time}</div>
               </li>
             ))}
           </ul>
         </Card>
 
-        <Card className="p-6 shadow-soft bg-gradient-primary text-white border-0">
-          <h3 className="font-display font-semibold">Alertes en cours</h3>
+        <Card className="p-4 md:p-6 shadow-soft bg-gradient-primary text-white border-0">
+          <h3 className="font-display font-semibold text-sm md:text-base">Alertes en cours</h3>
           <p className="text-xs text-white/80 mt-1">3 anomalies à traiter</p>
-          <div className="mt-5 space-y-3">
+          <div className="mt-4 space-y-2">
             {[
               { t: "Pr. Diallo — dépassement de 28h", d: "Département Informatique" },
               { t: "Dr. Konan — activité non liée",   d: "Cours non référencé" },
@@ -134,7 +143,7 @@ export default function AdminDashboard() {
               </div>
             ))}
           </div>
-          <Button variant="outline" className="mt-5 w-full bg-white text-primary hover:bg-white/90 border-0">
+          <Button variant="outline" className="mt-4 w-full bg-white text-primary hover:bg-white/90 border-0">
             Traiter les alertes
           </Button>
         </Card>

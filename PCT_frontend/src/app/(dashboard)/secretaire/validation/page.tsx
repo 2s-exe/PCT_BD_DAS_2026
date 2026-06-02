@@ -3,7 +3,6 @@ import { AppShell, PageHeader } from "@/components/shared/AppShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Check, X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -51,20 +50,28 @@ export default function SecretaireValidation() {
                     <Badge variant="outline">{v.annee?.libelle_annee}</Badge>
                     <Badge className="bg-amber-50 text-amber-700 border-0">En attente</Badge>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 mt-3 text-sm">
-                    <div><span className="text-muted-foreground">Prévues</span><div className="font-semibold">{v.heures_prevues}h</div></div>
-                    <div><span className="text-muted-foreground">Réalisées</span><div className="font-semibold">{v.heures_realisees}h</div></div>
-                    <div><span className="text-muted-foreground">Complémentaires</span>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3 text-sm">
+                    <div>
+                      <span className="text-muted-foreground text-xs">Prévues</span>
+                      <div className="font-semibold">{v.heures_prevues}h</div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-xs">Réalisées</span>
+                      <div className="font-semibold">{v.heures_realisees}h</div>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-xs">Complémentaires</span>
                       <div className={`font-semibold ${v.heures_complementaires > 0 ? "text-amber-600" : "text-muted-foreground"}`}>
                         {v.heures_complementaires > 0 ? `+${v.heures_complementaires}h` : "—"}
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2 mt-4">
+                  <div className="flex flex-wrap gap-2 mt-4">
                     <Button
                       size="sm"
                       className="bg-green-600 hover:bg-green-700 text-white"
                       onClick={() => valider.mutate({ id: v.id, statut: "valide" })}
+                      disabled={valider.isPending}
                     >
                       <Check className="h-4 w-4 mr-1" />Valider
                     </Button>
@@ -72,6 +79,7 @@ export default function SecretaireValidation() {
                       size="sm" variant="outline"
                       className="text-destructive border-destructive/30 hover:bg-destructive/5"
                       onClick={() => valider.mutate({ id: v.id, statut: "rejete" })}
+                      disabled={valider.isPending}
                     >
                       <X className="h-4 w-4 mr-1" />Rejeter
                     </Button>

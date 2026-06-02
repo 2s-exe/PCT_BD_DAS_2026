@@ -10,10 +10,10 @@ import { Clock, CheckCircle2, ClipboardList, PlusCircle } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 
 const recent = [
-  { d: "12/03/2025", c: "INF301 - Algorithmique",   t: "Cours magistral", h: 3, st: "valide" },
-  { d: "11/03/2025", c: "INF402 - Génie logiciel",  t: "TD",              h: 2, st: "valide" },
-  { d: "10/03/2025", c: "INF301 - Algorithmique",   t: "TP",              h: 4, st: "en_attente" },
-  { d: "08/03/2025", c: "INF402 - Génie logiciel",  t: "Évaluation",      h: 2, st: "valide" },
+  { d: "12/03/2025", c: "INF301 - Algorithmique",  t: "Cours magistral", h: 3, st: "valide" },
+  { d: "11/03/2025", c: "INF402 - Génie logiciel", t: "TD",              h: 2, st: "valide" },
+  { d: "10/03/2025", c: "INF301 - Algorithmique",  t: "TP",              h: 4, st: "en_attente" },
+  { d: "08/03/2025", c: "INF402 - Génie logiciel", t: "Évaluation",      h: 2, st: "valide" },
 ];
 
 export default function EnseignantDashboard() {
@@ -30,13 +30,15 @@ export default function EnseignantDashboard() {
         actions={
           <Button asChild className="bg-gradient-primary text-white hover:opacity-95">
             <Link href="/enseignant/declarer">
-              <PlusCircle className="h-4 w-4 mr-2" />Ajouter une activité
+              <PlusCircle className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Ajouter une activité</span>
+              <span className="sm:hidden">Ajouter</span>
             </Link>
           </Button>
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <StatCard label="Heures effectuées" value="268 h" icon={Clock}        tone="primary" delta="+12h cette semaine" />
         <StatCard label="Heures validées"   value="248 h" icon={CheckCircle2} tone="success" delta="92% du total" />
         <StatCard label="En attente"        value="20 h"  icon={ClipboardList} tone="warning" delta="3 activités" />
@@ -44,35 +46,37 @@ export default function EnseignantDashboard() {
 
       <div className="grid lg:grid-cols-3 gap-4 mt-6">
         <Card className="lg:col-span-2 shadow-soft">
-          <div className="p-5 border-b flex items-center justify-between">
-            <h3 className="font-display font-semibold">Mes dernières activités</h3>
-            <Button variant="link" asChild className="text-primary">
+          <div className="p-4 md:p-5 border-b flex items-center justify-between gap-2">
+            <h3 className="font-display font-semibold text-sm md:text-base">Mes dernières activités</h3>
+            <Button variant="link" asChild className="text-primary shrink-0">
               <Link href="/enseignant/historique">Historique complet</Link>
             </Button>
           </div>
           <ul className="divide-y">
             {recent.map((a, i) => (
-              <li key={i} className="p-4 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary-soft text-primary flex items-center justify-center text-xs font-semibold">
+              <li key={i} className="p-3 md:p-4 flex items-center gap-3">
+                <div className="h-9 w-9 shrink-0 rounded-lg bg-primary-soft text-primary flex items-center justify-center text-xs font-semibold">
                   {a.t.slice(0, 2).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">{a.c}</div>
-                  <div className="text-xs text-muted-foreground">{a.t} • {a.d}</div>
+                  <div className="text-xs text-muted-foreground truncate">{a.t} • {a.d}</div>
                 </div>
-                <div className="text-sm font-semibold">{a.h}h</div>
-                {a.st === "valide"
-                  ? <Badge className="bg-green-50 text-green-700 border-0">Validé</Badge>
-                  : <Badge className="bg-amber-50 text-amber-700 border-0">En attente</Badge>}
+                <div className="text-sm font-semibold shrink-0">{a.h}h</div>
+                <div className="shrink-0 hidden sm:block">
+                  {a.st === "valide"
+                    ? <Badge className="bg-green-50 text-green-700 border-0">Validé</Badge>
+                    : <Badge className="bg-amber-50 text-amber-700 border-0">En attente</Badge>}
+                </div>
               </li>
             ))}
           </ul>
         </Card>
 
-        <Card className="p-6 shadow-soft">
-          <h3 className="font-display font-semibold">Volume horaire annuel</h3>
+        <Card className="p-4 md:p-6 shadow-soft">
+          <h3 className="font-display font-semibold text-sm md:text-base">Volume horaire annuel</h3>
           <p className="text-xs text-muted-foreground mt-1">Objectif : 240 h</p>
-          <div className="mt-6">
+          <div className="mt-5">
             <div className="flex items-end justify-between mb-2">
               <span className="font-display text-3xl font-semibold text-primary">268h</span>
               <Badge className="bg-amber-50 text-amber-700 border-0">+28h compl.</Badge>
@@ -83,10 +87,12 @@ export default function EnseignantDashboard() {
               <span>240h prévus</span>
             </div>
           </div>
-          <div className="mt-6 space-y-2">
+          <div className="mt-5 space-y-2">
             {[
-              { l: "Cours magistral", v: "120h" }, { l: "TD",           v: "84h" },
-              { l: "TP",              v: "48h"  }, { l: "Évaluations",  v: "16h" },
+              { l: "Cours magistral", v: "120h" },
+              { l: "TD",              v: "84h"  },
+              { l: "TP",              v: "48h"  },
+              { l: "Évaluations",     v: "16h"  },
             ].map((s) => (
               <div key={s.l} className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{s.l}</span>
