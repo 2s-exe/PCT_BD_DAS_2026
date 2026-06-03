@@ -1,0 +1,29 @@
+# Frontend (géré sur la branche PCT_frontend)
+PCT_frontend/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Éditeurs
+.vscode/
+.idea/
+
+# Laravel — dossiers générés
+PctBackend/vendor/
+PctBackend/node_modules/
+PctBackend/.env
+PctBackend/.env.backup
+PctBackend/.env.production
+PctBackend/storage/logs/
+PctBackend/storage/framework/cache/
+PctBackend/storage/framework/sessions/
+PctBackend/storage/framework/views/
+PctBackend/bootstrap/cache/
+PctBackend/public/hot
+PctBackend/public/storage
+PctBackend/database/*.sqlite
+PctBackend/database/*.sqlite-shm
+PctBackend/database/*.sqlite-wal
+PctBackend/.phpunit.result.cache
+PctBackend/.phpunit.cache/
