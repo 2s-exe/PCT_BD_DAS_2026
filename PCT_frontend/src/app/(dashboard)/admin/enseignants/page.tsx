@@ -31,7 +31,9 @@ import {
   Plus, Filter, MoreHorizontal, Download,
   Pencil, UserX, UserCheck,
 } from "lucide-react";
+import { toast } from "sonner";
 import api from "@/lib/api";
+import { getErrorMessage } from "@/lib/errors";
 import type { PaginatedResponse, Enseignant, Departement } from "@/types";
 
 // ─── Schéma ────────────────────────────────────────────────────
@@ -68,19 +70,33 @@ export default function AdminEnseignants() {
 
   const createMutation = useMutation({
     mutationFn: (payload: FormData) => api.post("/enseignants", payload).then(r => r.data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["enseignants"] }); closeDialog(); },
+    onSuccess: () => {
+      toast.success("Enseignant créé avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["enseignants"] });
+      closeDialog();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: FormData }) =>
       api.put(`/enseignants/${id}`, payload).then(r => r.data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["enseignants"] }); closeDialog(); },
+    onSuccess: () => {
+      toast.success("Enseignant modifié avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["enseignants"] });
+      closeDialog();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const toggleMutation = useMutation({
     mutationFn: (t: Enseignant) =>
       api.patch(`/enseignants/${t.id}`, { actif: !t.actif }).then(r => r.data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["enseignants"] }),
+    onSuccess: (_, t) => {
+      toast.success(t.actif ? "Enseignant désactivé." : "Enseignant activé.");
+      queryClient.invalidateQueries({ queryKey: ["enseignants"] });
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const closeDialog = () => { setDialogOpen(false); setEditing(null); };

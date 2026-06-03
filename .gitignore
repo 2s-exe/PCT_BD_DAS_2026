@@ -1,0 +1,10 @@
+# Backend (géré sur la branche PCT_backend)
+PctBackend/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Éditeurs
+.vscode/
+.idea/

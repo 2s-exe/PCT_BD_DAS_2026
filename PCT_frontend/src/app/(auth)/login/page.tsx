@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { ShieldCheck, Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/errors";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -23,8 +24,8 @@ export default function LoginPage() {
     try {
       await login(loginValue, password);
       toast.success("Connexion réussie !");
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Identifiants invalides.");
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

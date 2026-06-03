@@ -23,7 +23,10 @@ import {
   DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Plus, MoreHorizontal, Pencil, Trash2, Star } from "lucide-react";
+import { toast } from "sonner";
 import api from "@/lib/api";
+import { getErrorMessage } from "@/lib/errors";
+import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
 import type { AnneeAcademique } from "@/types";
 
 const schema = z.object({
@@ -36,8 +39,9 @@ type FormData = z.infer<typeof schema>;
 
 export default function AdminAnnees() {
   const queryClient = useQueryClient();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing]       = useState<AnneeAcademique | null>(null);
+  const [dialogOpen, setDialogOpen]     = useState(false);
+  const [editing, setEditing]           = useState<AnneeAcademique | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AnneeAcademique | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["annees"],
@@ -46,23 +50,42 @@ export default function AdminAnnees() {
 
   const createMutation = useMutation({
     mutationFn: (p: FormData) => api.post("/annees", p).then(r => r.data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["annees"] }); closeDialog(); },
+    onSuccess: () => {
+      toast.success("Année créée avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["annees"] });
+      closeDialog();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: FormData }) =>
       api.put(`/annees/${id}`, payload).then(r => r.data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["annees"] }); closeDialog(); },
+    onSuccess: () => {
+      toast.success("Année modifiée avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["annees"] });
+      closeDialog();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => api.delete(`/annees/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["annees"] }),
+    onSuccess: () => {
+      toast.success("Année supprimée.");
+      queryClient.invalidateQueries({ queryKey: ["annees"] });
+      setDeleteTarget(null);
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const activateMutation = useMutation({
     mutationFn: (id: number) => api.patch(`/annees/${id}/activer`).then(r => r.data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["annees"] }),
+    onSuccess: () => {
+      toast.success("Année académique définie comme active.");
+      queryClient.invalidateQueries({ queryKey: ["annees"] });
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const closeDialog = () => { setDialogOpen(false); setEditing(null); };
@@ -138,7 +161,7 @@ export default function AdminAnnees() {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-destructive"
-                            onClick={() => deleteMutation.mutate(a.id)}
+                            onClick={() => setDeleteTarget(a)}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />Supprimer
                           </DropdownMenuItem>
@@ -174,23 +197,26 @@ export default function AdminAnnees() {
             }
             onClose={closeDialog}
             isLoading={createMutation.isPending || updateMutation.isPending}
-            error={
-              (createMutation.error || updateMutation.error) instanceof Error
-                ? (createMutation.error ?? updateMutation.error)!.message : null
-            }
           />
         </DialogContent>
       </Dialog>
+
+      <DeleteConfirmDialog
+        open={!!deleteTarget}
+        label={deleteTarget?.libelle_annee}
+        isPending={deleteMutation.isPending}
+        onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </AppShell>
   );
 }
 
-function AnneeForm({ editing, onSubmit, onClose, isLoading, error }: {
+function AnneeForm({ editing, onSubmit, onClose, isLoading }: {
   editing: AnneeAcademique | null;
   onSubmit: (d: FormData) => void;
   onClose: () => void;
   isLoading: boolean;
-  error: string | null;
 }) {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -220,7 +246,6 @@ function AnneeForm({ editing, onSubmit, onClose, isLoading, error }: {
           {errors.date_fin && <p className="text-xs text-destructive">{errors.date_fin.message}</p>}
         </div>
       </div>
-      {error && <p className="text-xs text-destructive bg-destructive/10 px-3 py-2 rounded-md">{error}</p>}
       <DialogFooter className="pt-2 flex-col sm:flex-row gap-2">
         <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>Annuler</Button>
         <Button type="submit" className="bg-gradient-primary text-white hover:opacity-95" disabled={isLoading}>

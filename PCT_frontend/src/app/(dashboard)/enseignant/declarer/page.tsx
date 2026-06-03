@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { getErrorMessage } from "@/lib/errors";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
@@ -56,7 +57,7 @@ export default function DeclarerActivite() {
       toast.success("Activité déclarée avec succès !");
       router.push("/enseignant/historique");
     },
-    onError: (e: any) => toast.error(e?.response?.data?.message ?? "Erreur lors de la déclaration."),
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   return (

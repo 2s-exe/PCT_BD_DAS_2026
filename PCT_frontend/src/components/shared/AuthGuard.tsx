@@ -20,9 +20,10 @@ export function AuthGuard({
       return;
     }
     if (requiredRole && user?.role !== requiredRole) {
-      router.replace(`/${user?.role}`);
+      router.replace(`/${user?.role ?? ""}`);
     }
-  }, [isAuthenticated, user, requiredRole, router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.role, requiredRole]);
 
   if (!isAuthenticated) return null;
   if (requiredRole && user?.role !== requiredRole) return null;

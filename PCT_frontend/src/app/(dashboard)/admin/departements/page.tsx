@@ -4,7 +4,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { AppShell, PageHeader } from "@/components/shared/AppShell";
+import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Plus, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import api from "@/lib/api";
+import { getErrorMessage } from "@/lib/errors";
 import type { Departement } from "@/types";
 
 const schema = z.object({
@@ -33,9 +36,10 @@ type FormData = z.infer<typeof schema>;
 
 export default function AdminDepartements() {
   const queryClient = useQueryClient();
-  const [search, setSearch]         = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing]       = useState<Departement | null>(null);
+  const [search, setSearch]             = useState("");
+  const [dialogOpen, setDialogOpen]     = useState(false);
+  const [editing, setEditing]           = useState<Departement | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Departement | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["departements"],
@@ -44,18 +48,33 @@ export default function AdminDepartements() {
 
   const createMutation = useMutation({
     mutationFn: (p: FormData) => api.post("/departements", p).then(r => r.data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["departements"] }); closeDialog(); },
+    onSuccess: () => {
+      toast.success("Département créé avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["departements"] });
+      closeDialog();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: FormData }) =>
       api.put(`/departements/${id}`, payload).then(r => r.data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["departements"] }); closeDialog(); },
+    onSuccess: () => {
+      toast.success("Département modifié avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["departements"] });
+      closeDialog();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => api.delete(`/departements/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["departements"] }),
+    onSuccess: () => {
+      toast.success("Département supprimé.");
+      queryClient.invalidateQueries({ queryKey: ["departements"] });
+      setDeleteTarget(null);
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const closeDialog = () => { setDialogOpen(false); setEditing(null); };
@@ -134,7 +153,7 @@ export default function AdminDepartements() {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-destructive"
-                            onClick={() => deleteMutation.mutate(d.id)}
+                            onClick={() => setDeleteTarget(d)}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />Supprimer
                           </DropdownMenuItem>
@@ -156,7 +175,6 @@ export default function AdminDepartements() {
         )}
       </Card>
 
-      {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={v => { if (!v) closeDialog(); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -171,42 +189,53 @@ export default function AdminDepartements() {
             }
             onClose={closeDialog}
             isLoading={createMutation.isPending || updateMutation.isPending}
-            error={
-              (createMutation.error || updateMutation.error) instanceof Error
-                ? (createMutation.error ?? updateMutation.error)!.message : null
-            }
           />
         </DialogContent>
       </Dialog>
+
+      <DeleteConfirmDialog
+        open={!!deleteTarget}
+        label={deleteTarget?.nom_departement}
+        isPending={deleteMutation.isPending}
+        onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </AppShell>
   );
 }
 
-function DeptForm({ editing, onSubmit, onClose, isLoading, error }: {
+function DeptForm({ editing, onSubmit, onClose, isLoading }: {
   editing: Departement | null;
   onSubmit: (d: FormData) => void;
   onClose: () => void;
   isLoading: boolean;
-  error: string | null;
 }) {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { nom_departement: editing?.nom_departement ?? "", responsable: editing?.responsable ?? "" },
+    defaultValues: {
+      nom_departement: editing?.nom_departement ?? "",
+      responsable:     editing?.responsable ?? "",
+    },
   });
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
       <div className="space-y-1.5">
         <Label htmlFor="nom_departement">Nom du département *</Label>
         <Input id="nom_departement" {...register("nom_departement")} placeholder="Informatique" />
-        {errors.nom_departement && <p className="text-xs text-destructive">{errors.nom_departement.message}</p>}
+        {errors.nom_departement && (
+          <p className="text-xs text-destructive">{errors.nom_departement.message}</p>
+        )}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="responsable">Responsable <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+        <Label htmlFor="responsable">
+          Responsable <span className="text-muted-foreground text-xs">(optionnel)</span>
+        </Label>
         <Input id="responsable" {...register("responsable")} placeholder="Pr. Konan" />
       </div>
-      {error && <p className="text-xs text-destructive bg-destructive/10 px-3 py-2 rounded-md">{error}</p>}
       <DialogFooter className="pt-2 flex-col sm:flex-row gap-2">
-        <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>Annuler</Button>
+        <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+          Annuler
+        </Button>
         <Button type="submit" className="bg-gradient-primary text-white hover:opacity-95" disabled={isLoading}>
           {isLoading ? "Enregistrement…" : editing ? "Mettre à jour" : "Créer"}
         </Button>

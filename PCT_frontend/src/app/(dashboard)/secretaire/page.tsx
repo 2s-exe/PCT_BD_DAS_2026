@@ -46,7 +46,8 @@ export default function SecretaireDashboard() {
               <li key={i} className="p-3 md:p-4 flex items-center gap-2 md:gap-3">
                 <Avatar className="h-9 w-9 shrink-0">
                   <AvatarFallback className="bg-primary-soft text-primary text-xs">
-                    {p.e.split(" ").slice(-1)[0].slice(0, 2)}
+                    {(p.e.split(" ").slice(-1)[0] ?? "").slice(0, 2) || "??"}
+
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">

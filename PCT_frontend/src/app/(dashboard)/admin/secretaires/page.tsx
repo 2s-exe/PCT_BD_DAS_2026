@@ -27,7 +27,9 @@ import {
   Plus, MoreHorizontal, Download, Pencil,
   UserX, UserCheck, Filter,
 } from "lucide-react";
+import { toast } from "sonner";
 import api from "@/lib/api";
+import { getErrorMessage } from "@/lib/errors";
 import type { PaginatedResponse, Secretaire } from "@/types";
 
 // ─── Schéma de validation ─────────────────────────────────────
@@ -58,25 +60,33 @@ export default function AdminSecretaires() {
     mutationFn: (payload: SecretaireFormData) =>
       api.post("/secretaires", payload).then(r => r.data),
     onSuccess: () => {
+      toast.success("Secrétaire créée avec succès.");
       queryClient.invalidateQueries({ queryKey: ["secretaires"] });
       setDialogOpen(false);
     },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: SecretaireFormData }) =>
       api.put(`/secretaires/${id}`, payload).then(r => r.data),
     onSuccess: () => {
+      toast.success("Secrétaire modifiée avec succès.");
       queryClient.invalidateQueries({ queryKey: ["secretaires"] });
       setDialogOpen(false);
       setEditing(null);
     },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const toggleMutation = useMutation({
     mutationFn: (s: Secretaire) =>
       api.patch(`/secretaires/${s.id}`, { actif: !s.actif }).then(r => r.data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["secretaires"] }),
+    onSuccess: (_, s) => {
+      toast.success(s.actif ? "Compte désactivé." : "Compte activé.");
+      queryClient.invalidateQueries({ queryKey: ["secretaires"] });
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const openCreate = () => {

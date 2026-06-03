@@ -24,7 +24,9 @@ import {
   SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Plus, Pencil } from "lucide-react";
+import { toast } from "sonner";
 import api from "@/lib/api";
+import { getErrorMessage } from "@/lib/errors";
 import type { ParametreCalcul } from "@/types";
 
 // ─── Schéma ────────────────────────────────────────────────────
@@ -49,13 +51,23 @@ export default function AdminParametres() {
 
   const createMutation = useMutation({
     mutationFn: (payload: FormData) => api.post("/parametres", payload).then(r => r.data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["parametres"] }); closeDialog(); },
+    onSuccess: () => {
+      toast.success("Paramètre créé avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["parametres"] });
+      closeDialog();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: FormData }) =>
       api.put(`/parametres/${id}`, payload).then(r => r.data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["parametres"] }); closeDialog(); },
+    onSuccess: () => {
+      toast.success("Paramètre modifié avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["parametres"] });
+      closeDialog();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const closeDialog = () => { setDialogOpen(false); setEditing(null); };

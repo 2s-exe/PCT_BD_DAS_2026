@@ -27,7 +27,10 @@ import {
   DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Plus, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import api from "@/lib/api";
+import { getErrorMessage } from "@/lib/errors";
+import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
 import type { PaginatedResponse, Attribution, Enseignant, Cours, AnneeAcademique } from "@/types";
 
 const schema = z.object({
@@ -41,9 +44,10 @@ type FormData = z.infer<typeof schema>;
 
 export default function AdminAttributions() {
   const queryClient = useQueryClient();
-  const [search, setSearch]         = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing]       = useState<Attribution | null>(null);
+  const [search, setSearch]             = useState("");
+  const [dialogOpen, setDialogOpen]     = useState(false);
+  const [editing, setEditing]           = useState<Attribution | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Attribution | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["attributions"],
@@ -67,18 +71,33 @@ export default function AdminAttributions() {
 
   const createMutation = useMutation({
     mutationFn: (p: FormData) => api.post("/attributions", p).then(r => r.data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["attributions"] }); closeDialog(); },
+    onSuccess: () => {
+      toast.success("Attribution créée avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["attributions"] });
+      closeDialog();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: FormData }) =>
       api.put(`/attributions/${id}`, payload).then(r => r.data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["attributions"] }); closeDialog(); },
+    onSuccess: () => {
+      toast.success("Attribution modifiée avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["attributions"] });
+      closeDialog();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => api.delete(`/attributions/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["attributions"] }),
+    onSuccess: () => {
+      toast.success("Attribution supprimée.");
+      queryClient.invalidateQueries({ queryKey: ["attributions"] });
+      setDeleteTarget(null);
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const closeDialog = () => { setDialogOpen(false); setEditing(null); };
@@ -179,7 +198,7 @@ export default function AdminAttributions() {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-destructive"
-                            onClick={() => deleteMutation.mutate(a.id)}
+                            onClick={() => setDeleteTarget(a)}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />Supprimer
                           </DropdownMenuItem>
@@ -213,19 +232,23 @@ export default function AdminAttributions() {
           : createMutation.mutate(d)
         }
         isLoading={createMutation.isPending || updateMutation.isPending}
-        error={
-          (createMutation.error || updateMutation.error) instanceof Error
-            ? (createMutation.error ?? updateMutation.error)!.message : null
-        }
+      />
+
+      <DeleteConfirmDialog
+        open={!!deleteTarget}
+        label={deleteTarget ? `${deleteTarget.enseignant?.nom_complet} — ${deleteTarget.cours?.intitule_ecue}` : undefined}
+        isPending={deleteMutation.isPending}
+        onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+        onCancel={() => setDeleteTarget(null)}
       />
     </AppShell>
   );
 }
 
-function AttributionDialog({ open, onClose, editing, enseignants, cours, annees, onSubmit, isLoading, error }: {
+function AttributionDialog({ open, onClose, editing, enseignants, cours, annees, onSubmit, isLoading }: {
   open: boolean; onClose: () => void; editing: Attribution | null;
   enseignants: Enseignant[]; cours: Cours[]; annees: AnneeAcademique[];
-  onSubmit: (d: FormData) => void; isLoading: boolean; error: string | null;
+  onSubmit: (d: FormData) => void; isLoading: boolean;
 }) {
   const { register, handleSubmit, control, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -309,7 +332,6 @@ function AttributionDialog({ open, onClose, editing, enseignants, cours, annees,
             </div>
           </div>
 
-          {error && <p className="text-xs text-destructive bg-destructive/10 px-3 py-2 rounded-md">{error}</p>}
           <DialogFooter className="pt-2 flex-col sm:flex-row gap-2">
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>Annuler</Button>
             <Button type="submit" className="bg-gradient-primary text-white hover:opacity-95" disabled={isLoading}>

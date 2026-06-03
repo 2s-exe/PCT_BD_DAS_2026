@@ -14,7 +14,7 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
 import type { Role } from "@/types";
 
@@ -125,6 +125,7 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
       {/* Sidebar mobile (Sheet) */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="w-64 p-0 bg-sidebar text-sidebar-foreground border-0">
+          <SheetTitle className="sr-only">Menu de navigation</SheetTitle>
           <SidebarHeader role={role} />
           <NavLinks role={role} pathname={pathname} onNavigate={() => setMobileOpen(false)} />
           <div className="p-4 border-t border-sidebar-border">

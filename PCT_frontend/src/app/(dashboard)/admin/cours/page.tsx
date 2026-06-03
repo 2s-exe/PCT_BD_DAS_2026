@@ -27,7 +27,10 @@ import {
   DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Plus, MoreHorizontal, Pencil, Trash2, Download } from "lucide-react";
+import { toast } from "sonner";
 import api from "@/lib/api";
+import { getErrorMessage } from "@/lib/errors";
+import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
 import type { PaginatedResponse, Cours } from "@/types";
 
 // ─── Schéma ────────────────────────────────────────────────────
@@ -52,9 +55,10 @@ const NIVEAU_COLORS: Record<string, string> = {
 // ─── Page principale ───────────────────────────────────────────
 export default function AdminCours() {
   const queryClient = useQueryClient();
-  const [search, setSearch]         = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editing, setEditing]       = useState<Cours | null>(null);
+  const [search, setSearch]             = useState("");
+  const [dialogOpen, setDialogOpen]     = useState(false);
+  const [editing, setEditing]           = useState<Cours | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Cours | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["cours"],
@@ -63,18 +67,33 @@ export default function AdminCours() {
 
   const createMutation = useMutation({
     mutationFn: (payload: FormData) => api.post("/cours", payload).then(r => r.data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["cours"] }); closeDialog(); },
+    onSuccess: () => {
+      toast.success("Cours créé avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["cours"] });
+      closeDialog();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: FormData }) =>
       api.put(`/cours/${id}`, payload).then(r => r.data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["cours"] }); closeDialog(); },
+    onSuccess: () => {
+      toast.success("Cours modifié avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["cours"] });
+      closeDialog();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => api.delete(`/cours/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cours"] }),
+    onSuccess: () => {
+      toast.success("Cours supprimé.");
+      queryClient.invalidateQueries({ queryKey: ["cours"] });
+      setDeleteTarget(null);
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const closeDialog = () => { setDialogOpen(false); setEditing(null); };
@@ -175,7 +194,7 @@ export default function AdminCours() {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-destructive"
-                            onClick={() => deleteMutation.mutate(c.id)}
+                            onClick={() => setDeleteTarget(c)}
                           >
                             <Trash2 className="h-4 w-4 mr-2" />Supprimer
                           </DropdownMenuItem>
@@ -206,11 +225,14 @@ export default function AdminCours() {
           : createMutation.mutate(d)
         }
         isLoading={createMutation.isPending || updateMutation.isPending}
-        error={
-          (createMutation.error || updateMutation.error) instanceof Error
-            ? (createMutation.error ?? updateMutation.error)!.message
-            : null
-        }
+      />
+
+      <DeleteConfirmDialog
+        open={!!deleteTarget}
+        label={deleteTarget?.intitule_ecue}
+        isPending={deleteMutation.isPending}
+        onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+        onCancel={() => setDeleteTarget(null)}
       />
     </AppShell>
   );
@@ -218,14 +240,13 @@ export default function AdminCours() {
 
 // ─── Dialog formulaire cours ───────────────────────────────────
 function CoursDialog({
-  open, onClose, editing, onSubmit, isLoading, error,
+  open, onClose, editing, onSubmit, isLoading,
 }: {
   open: boolean;
   onClose: () => void;
   editing: Cours | null;
   onSubmit: (d: FormData) => void;
   isLoading: boolean;
-  error: string | null;
 }) {
   const { register, handleSubmit, control, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(coursSchema),
@@ -308,10 +329,6 @@ function CoursDialog({
               {errors.charge_horaire_annuel && <p className="text-xs text-destructive">{errors.charge_horaire_annuel.message}</p>}
             </div>
           </div>
-
-          {error && (
-            <p className="text-xs text-destructive bg-destructive/10 px-3 py-2 rounded-md">{error}</p>
-          )}
 
           <DialogFooter className="pt-2 flex-col sm:flex-row gap-2">
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>Annuler</Button>
