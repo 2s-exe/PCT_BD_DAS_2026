@@ -1,0 +1,1755 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "PCT UVCI — API REST",
+        "description": "API de gestion des activités pédagogiques et volumes horaires — UVCI",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000/api/v1",
+            "description": "Serveur local"
+        }
+    ],
+    "paths": {
+        "/activites": {
+            "get": {
+                "tags": [
+                    "Activités"
+                ],
+                "summary": "Liste des activités pédagogiques",
+                "operationId": "c22a4964f4b93534d241c4b5358741cc",
+                "parameters": [
+                    {
+                        "name": "id_enseignant",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Activités"
+                ],
+                "summary": "Déclarer une activité (calcul VHN automatique)",
+                "operationId": "acca802abccc250267bbfa0bf4bfb12f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_attribution",
+                                    "id_annee",
+                                    "type_operation",
+                                    "niveau_complexite",
+                                    "date_activite"
+                                ],
+                                "properties": {
+                                    "id_attribution": {
+                                        "type": "integer"
+                                    },
+                                    "id_annee": {
+                                        "type": "integer"
+                                    },
+                                    "type_operation": {
+                                        "type": "string",
+                                        "enum": [
+                                            "creation",
+                                            "mise_a_jour"
+                                        ]
+                                    },
+                                    "niveau_complexite": {
+                                        "type": "string",
+                                        "enum": [
+                                            "simple",
+                                            "intermediaire",
+                                            "complexe"
+                                        ]
+                                    },
+                                    "date_activite": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "observations": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Activité créée avec volume_horaire calculé via paramètres VHN"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/activites/{id}": {
+            "get": {
+                "tags": [
+                    "Activités"
+                ],
+                "summary": "Détail",
+                "operationId": "1c7876ce64ffb783821dbde4907a44ae",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Activité"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Activités"
+                ],
+                "summary": "Supprimer",
+                "operationId": "6156879f00e32b30640fcfa9b998adf0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Supprimé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/annees": {
+            "get": {
+                "tags": [
+                    "Années"
+                ],
+                "summary": "Liste des années académiques",
+                "operationId": "53c13037109d4ebe427702d98f0e3f00",
+                "responses": {
+                    "200": {
+                        "description": "Liste"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Années"
+                ],
+                "summary": "Créer une année",
+                "operationId": "3fc0cd0f616dcc2a60542c67c578e91c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "libelle_annee",
+                                    "date_debut",
+                                    "date_fin"
+                                ],
+                                "properties": {
+                                    "libelle_annee": {
+                                        "type": "string",
+                                        "example": "2025-2026"
+                                    },
+                                    "date_debut": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "date_fin": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "active": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Créée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/annees/{id}": {
+            "get": {
+                "tags": [
+                    "Années"
+                ],
+                "summary": "Détail",
+                "operationId": "f002ab85d595090062d4ed4151bebc8b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Année"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Années"
+                ],
+                "summary": "Modifier",
+                "operationId": "036d406a395d580803f29c0bacfc181a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "libelle_annee": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Modifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Années"
+                ],
+                "summary": "Supprimer",
+                "operationId": "2ac3f15c53bc575282e0779dc2b44540",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Supprimé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/annees/{id}/activer": {
+            "patch": {
+                "tags": [
+                    "Années"
+                ],
+                "summary": "Définir comme année active",
+                "operationId": "31f0bd9263fcf4aba03ba8e27ef4fced",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Activée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/attributions": {
+            "get": {
+                "tags": [
+                    "Attributions"
+                ],
+                "summary": "Liste des attributions",
+                "operationId": "7047849f78a76754e72aba75d2e79b2c",
+                "parameters": [
+                    {
+                        "name": "id_enseignant",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Attributions"
+                ],
+                "summary": "Créer une attribution",
+                "operationId": "7beee1b74b8a273d56586bda3143c6ca",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "enseignant_id",
+                                    "cours_id",
+                                    "annee_id",
+                                    "charge_horaire",
+                                    "date_attribution"
+                                ],
+                                "properties": {
+                                    "enseignant_id": {
+                                        "type": "integer"
+                                    },
+                                    "cours_id": {
+                                        "type": "integer"
+                                    },
+                                    "annee_id": {
+                                        "type": "integer"
+                                    },
+                                    "charge_horaire": {
+                                        "type": "integer"
+                                    },
+                                    "date_attribution": {
+                                        "type": "string",
+                                        "format": "date"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Créée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/attributions/{id}": {
+            "get": {
+                "tags": [
+                    "Attributions"
+                ],
+                "summary": "Détail",
+                "operationId": "e1efa9392c7716239bea89c02481e54b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Attribution"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Attributions"
+                ],
+                "summary": "Modifier",
+                "operationId": "56a5740dd5074096ac70582e6f87988b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "charge_horaire": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Modifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Attributions"
+                ],
+                "summary": "Supprimer",
+                "operationId": "29f9743bcdd8cc7aa923284a83335fbd",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Supprimé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Connexion — obtenir un token",
+                "operationId": "67d6d0fdd54fba132e1b6f55ca254183",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "login",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "login": {
+                                        "type": "string",
+                                        "example": "admin"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "admin123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token Sanctum + user"
+                    },
+                    "401": {
+                        "description": "Identifiants invalides"
+                    },
+                    "403": {
+                        "description": "Compte désactivé"
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Déconnexion",
+                "operationId": "28d48c13fca984400ac8de99f54ee13a",
+                "responses": {
+                    "200": {
+                        "description": "Déconnecté"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Profil de l'utilisateur connecté",
+                "operationId": "bc2032a379aa97707ccc61511897c120",
+                "responses": {
+                    "200": {
+                        "description": "Profil utilisateur"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/cours": {
+            "get": {
+                "tags": [
+                    "Cours"
+                ],
+                "summary": "Liste paginée des cours",
+                "operationId": "c183775c7c33648dbbd255db06aac9d3",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Cours"
+                ],
+                "summary": "Créer un cours",
+                "operationId": "41554cbc84ede3082c5201915b2f2f09",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "intitule_ecue",
+                                    "niveau",
+                                    "semestre",
+                                    "credit_ecue",
+                                    "charge_horaire_annuel"
+                                ],
+                                "properties": {
+                                    "intitule_ecue": {
+                                        "type": "string"
+                                    },
+                                    "niveau": {
+                                        "type": "string",
+                                        "enum": [
+                                            "L1",
+                                            "L2",
+                                            "L3",
+                                            "M1",
+                                            "M2"
+                                        ]
+                                    },
+                                    "semestre": {
+                                        "type": "string",
+                                        "example": "S1"
+                                    },
+                                    "credit_ecue": {
+                                        "type": "integer"
+                                    },
+                                    "charge_horaire_annuel": {
+                                        "type": "integer"
+                                    },
+                                    "code_specialite": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Cours créé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/cours/{id}": {
+            "get": {
+                "tags": [
+                    "Cours"
+                ],
+                "summary": "Détail",
+                "operationId": "c92bc269c93fbedc8d5a5323b1a55fb5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cours"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Cours"
+                ],
+                "summary": "Modifier",
+                "operationId": "5f31672184168033f10b1e426749d763",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "intitule_ecue": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Modifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cours"
+                ],
+                "summary": "Supprimer",
+                "operationId": "b0ec197ca405514af0ede84b7ffce25c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Supprimé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/departements": {
+            "get": {
+                "tags": [
+                    "Départements"
+                ],
+                "summary": "Liste des départements",
+                "operationId": "f7ccda05f9ece274ee97ca5a76b1ec79",
+                "responses": {
+                    "200": {
+                        "description": "Liste"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Départements"
+                ],
+                "summary": "Créer un département",
+                "operationId": "01d1d155d08a0fe33a1e2dd29ae520f7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nom_departement"
+                                ],
+                                "properties": {
+                                    "nom_departement": {
+                                        "type": "string"
+                                    },
+                                    "responsable": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Créé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/departements/{id}": {
+            "get": {
+                "tags": [
+                    "Départements"
+                ],
+                "summary": "Détail",
+                "operationId": "4e639658c9ed87faea9054d2efae16a2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Département"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Départements"
+                ],
+                "summary": "Modifier",
+                "operationId": "17523c776d4a38545134c4e96165da62",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nom_departement": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Modifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Départements"
+                ],
+                "summary": "Supprimer",
+                "operationId": "e380395be478386b001332bd6966310f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Supprimé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/enseignants": {
+            "get": {
+                "tags": [
+                    "Enseignants"
+                ],
+                "summary": "Liste paginée des enseignants",
+                "operationId": "6090669dd7c2eeff1a5ea84e185aae1d",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste paginée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Enseignants"
+                ],
+                "summary": "Créer un enseignant",
+                "operationId": "ca5e539c27e02a51adefb712e3fda2eb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nom",
+                                    "prenom",
+                                    "email",
+                                    "grade",
+                                    "statut",
+                                    "taux_horaire"
+                                ],
+                                "properties": {
+                                    "nom": {
+                                        "type": "string"
+                                    },
+                                    "prenom": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "telephone": {
+                                        "type": "string"
+                                    },
+                                    "grade": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Assistant",
+                                            "Maitre-Assistant",
+                                            "Professeur"
+                                        ]
+                                    },
+                                    "statut": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Permanent",
+                                            "Vacataire"
+                                        ]
+                                    },
+                                    "taux_horaire": {
+                                        "type": "number"
+                                    },
+                                    "departement_id": {
+                                        "type": "integer"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Enseignant créé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/enseignants/{id}": {
+            "get": {
+                "tags": [
+                    "Enseignants"
+                ],
+                "summary": "Détail d'un enseignant",
+                "operationId": "bed1d415f5396f4419491615de39afb0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Enseignant"
+                    },
+                    "404": {
+                        "description": "Non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Enseignants"
+                ],
+                "summary": "Modifier un enseignant",
+                "operationId": "ff7001219f4d2eeb35b0962a7fc03618",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nom": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Modifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Enseignants"
+                ],
+                "summary": "Supprimer un enseignant",
+                "operationId": "dbf0438885f26147a48309aeb02cad7c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Supprimé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Enseignants"
+                ],
+                "summary": "Activer ou désactiver",
+                "operationId": "92b11063f5df164f6a8a4330322e90ec",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "actif": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Statut mis à jour"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/exports/pdf": {
+            "get": {
+                "tags": [
+                    "Exports"
+                ],
+                "summary": "Export état global des heures (CSV)",
+                "operationId": "bfb31fa34572dae4399614e77643c128",
+                "responses": {
+                    "200": {
+                        "description": "Fichier CSV téléchargeable"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/exports/excel": {
+            "get": {
+                "tags": [
+                    "Exports"
+                ],
+                "summary": "Export Excel pour comptabilité (CSV)",
+                "operationId": "a6e4380784a4ad9c55e49431facfc3f7",
+                "responses": {
+                    "200": {
+                        "description": "Fichier CSV pour comptabilité"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/parametres": {
+            "get": {
+                "tags": [
+                    "Paramètres"
+                ],
+                "summary": "Liste des coefficients VHN",
+                "operationId": "e8a31bfd9325c4e8c92d8259776501b5",
+                "responses": {
+                    "200": {
+                        "description": "Paramètres"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Paramètres"
+                ],
+                "summary": "Créer un paramètre",
+                "operationId": "dc39c06e19410d50a135062bdaacdf98",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "type_operation",
+                                    "niveau_complexite",
+                                    "coefficient_vhn"
+                                ],
+                                "properties": {
+                                    "type_operation": {
+                                        "type": "string",
+                                        "enum": [
+                                            "creation",
+                                            "mise_a_jour"
+                                        ]
+                                    },
+                                    "niveau_complexite": {
+                                        "type": "string",
+                                        "enum": [
+                                            "simple",
+                                            "intermediaire",
+                                            "complexe"
+                                        ]
+                                    },
+                                    "coefficient_vhn": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 1.5
+                                    },
+                                    "description": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Créé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/parametres/{id}": {
+            "put": {
+                "tags": [
+                    "Paramètres"
+                ],
+                "summary": "Modifier",
+                "operationId": "ff0cb4dcd7a8717f4e5a6709358dbccb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "coefficient_vhn": {
+                                        "type": "number"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Modifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Paramètres"
+                ],
+                "summary": "Supprimer",
+                "operationId": "641c004c7a113a5fa6e68f8042754a2d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Supprimé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/secretaires": {
+            "get": {
+                "tags": [
+                    "Secrétaires"
+                ],
+                "summary": "Liste des secrétaires",
+                "operationId": "f7c19b7328b096957032fe048ad2d4b6",
+                "responses": {
+                    "200": {
+                        "description": "Liste"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Secrétaires"
+                ],
+                "summary": "Créer une secrétaire",
+                "operationId": "4fcb5a1c1bb9d73cf92ecab3c93914e9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nom",
+                                    "prenom",
+                                    "email",
+                                    "login",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "nom": {
+                                        "type": "string"
+                                    },
+                                    "prenom": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "telephone": {
+                                        "type": "string"
+                                    },
+                                    "login": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Créée"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/secretaires/{id}": {
+            "get": {
+                "tags": [
+                    "Secrétaires"
+                ],
+                "summary": "Détail",
+                "operationId": "c175331cb4d384912dd1554bc8782220",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Secrétaire"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Secrétaires"
+                ],
+                "summary": "Modifier",
+                "operationId": "fcdf201dd0a01b07215b5779b9afe3af",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "nom": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Modifié"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Secrétaires"
+                ],
+                "summary": "Supprimer",
+                "operationId": "4e32746690b0145c15efaccad1f32bbd",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Supprimé"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Secrétaires"
+                ],
+                "summary": "Activer/désactiver",
+                "operationId": "06c282c6f44f1037b89a275f962e40e6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "actif": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Statut mis à jour"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/volumes": {
+            "get": {
+                "tags": [
+                    "Volumes"
+                ],
+                "summary": "Liste des volumes horaires",
+                "operationId": "9b7896a18f3f862846b16b64e2266b9b",
+                "parameters": [
+                    {
+                        "name": "statut",
+                        "in": "query",
+                        "description": "en_attente | valide | rejete",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Volumes paginés"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/volumes/{id}/valider": {
+            "post": {
+                "tags": [
+                    "Volumes"
+                ],
+                "summary": "Valider ou rejeter un volume",
+                "operationId": "4d3aed9ecf3826dcc6ee94a802459a3e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "statut_validation"
+                                ],
+                                "properties": {
+                                    "statut_validation": {
+                                        "type": "string",
+                                        "enum": [
+                                            "valide",
+                                            "rejete"
+                                        ]
+                                    },
+                                    "observations": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Volume validé/rejeté"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Token obtenu via POST /login. Format : Bearer {token}",
+                "bearerFormat": "Token",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Activités",
+            "description": "Activités"
+        },
+        {
+            "name": "Années",
+            "description": "Années"
+        },
+        {
+            "name": "Attributions",
+            "description": "Attributions"
+        },
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
+        {
+            "name": "Cours",
+            "description": "Cours"
+        },
+        {
+            "name": "Départements",
+            "description": "Départements"
+        },
+        {
+            "name": "Enseignants",
+            "description": "Enseignants"
+        },
+        {
+            "name": "Exports",
+            "description": "Exports"
+        },
+        {
+            "name": "Paramètres",
+            "description": "Paramètres"
+        },
+        {
+            "name": "Secrétaires",
+            "description": "Secrétaires"
+        },
+        {
+            "name": "Volumes",
+            "description": "Volumes"
+        }
+    ]
+}
