@@ -1,6 +1,3 @@
-# Frontend (géré sur la branche PCT_frontend)
-PCT_frontend/
-
 # Fichiers système
 .DS_Store
 Thumbs.db
@@ -9,7 +6,7 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Laravel — dossiers générés
+# Backend (Laravel)
 PctBackend/vendor/
 PctBackend/node_modules/
 PctBackend/.env
@@ -27,3 +24,9 @@ PctBackend/database/*.sqlite-shm
 PctBackend/database/*.sqlite-wal
 PctBackend/.phpunit.result.cache
 PctBackend/.phpunit.cache/
+
+# Frontend
+PCT_frontend/node_modules/
+PCT_frontend/dist/
+PCT_frontend/.env.local
+PCT_frontend/.env.production
