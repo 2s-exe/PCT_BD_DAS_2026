@@ -1,0 +1,16 @@
+.git
+.gitignore
+*.md
+.env
+.env.*
+PCT_frontend/.next
+PCT_frontend/node_modules
+PCT_frontend/.env*.local
+PctBackend/vendor
+PctBackend/node_modules
+PctBackend/.env
+PctBackend/storage/logs
+PctBackend/storage/framework/cache
+PctBackend/storage/framework/sessions
+PctBackend/storage/framework/views
+PctBackend/bootstrap/cache
