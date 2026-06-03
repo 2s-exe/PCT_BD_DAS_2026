@@ -1,0 +1,13 @@
+<?php
+namespace App\Models;
+use Illuminate\Database\Eloquent\Model;
+class Enseignant extends Model
+{
+    protected $fillable = ['nom','prenom','email','telephone','grade','statut','taux_horaire','actif','departement_id'];
+    protected $casts = ['actif'=>'boolean','taux_horaire'=>'float'];
+    protected $appends = ['nom_complet'];
+    public function getNomCompletAttribute(): string { return $this->prenom . ' ' . $this->nom; }
+    public function departement() { return $this->belongsTo(Departement::class); }
+    public function attributions() { return $this->hasMany(Attribution::class); }
+    public function volumes() { return $this->hasMany(VolumeHoraire::class); }
+}
