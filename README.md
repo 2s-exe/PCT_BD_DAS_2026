@@ -10,7 +10,7 @@ Monorepo contenant le frontend Next.js et le backend Laravel, orchestrés via Do
 | Couche | Technologie |
 |--------|-------------|
 | Frontend | Next.js 15.5 · React 19 · TypeScript · TailwindCSS · Radix UI |
-| Backend | Laravel 12 · PHP 8.2 · Laravel Sanctum (API tokens) |
+| Backend | Laravel 12 · PHP 8.2 · Laravel Sanctum (Bearer tokens) |
 | Base de données | MySQL 8.0 |
 | Reverse proxy | Nginx 1.27 |
 | Conteneurisation | Docker · Docker Compose |
@@ -41,20 +41,20 @@ PCT_BD_DAS_2026/
 │   │   │   ├── AppShell.tsx           # Navigation + layout applicatif
 │   │   │   └── AuthGuard.tsx          # Protection client (token réactif)
 │   │   ├── lib/
-│   │   │   ├── api.ts                 # Client axios (Bearer token auto)
+│   │   │   ├── api.ts                 # Client axios (Bearer token auto + intercepteurs)
 │   │   │   └── errors.ts             # Gestion d'erreurs API
-│   │   ├── store/authStore.ts         # État global Zustand + cookie sync
+│   │   ├── store/authStore.ts         # État global Zustand + sync cookie
 │   │   └── hooks/useAuth.ts          # Login / logout
 │   └── Dockerfile
 ├── PctBackend/                        # API Laravel
 │   ├── app/Http/
 │   │   ├── Controllers/Api/           # 12 controllers REST
-│   │   └── Middleware/CheckRole.php   # Middleware de rôle
-│   ├── bootstrap/app.php              # Alias middleware 'role'
+│   │   └── Middleware/CheckRole.php   # Middleware de rôle (role:admin,secretaire,...)
+│   ├── bootstrap/app.php              # Enregistrement alias 'role' (sans statefulApi)
 │   ├── database/
 │   │   ├── migrations/
-│   │   └── seeders/DatabaseSeeder.php # Données de démo
-│   ├── routes/api.php                 # Routes avec contrôle de rôle
+│   │   └── seeders/DatabaseSeeder.php # 8 comptes de démo
+│   ├── routes/api.php                 # Routes avec contrôle de rôle par groupe
 │   └── Dockerfile
 ├── nginx/default.conf                 # /api/* → Laravel, /* → Next.js
 ├── docker-compose.yml
@@ -97,18 +97,18 @@ Générer une `APP_KEY` :
 docker run --rm php:8.2-alpine php -r "echo 'base64:' . base64_encode(random_bytes(32)) . PHP_EOL;"
 ```
 
-### 3. Démarrer l'application
+### 3. Builder et démarrer l'application
 
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 
-L'application est prête quand vous voyez :
+> **Important** : toujours utiliser `--build` au premier lancement ou après modification du code source pour intégrer les changements dans les images Docker.
 
-```
-pct-db       | ready for connections
-pct-backend  | NOTICE: ready to handle connections
-pct-frontend | ✓ Ready in 200ms
+L'application est prête quand tous les services sont `Up` :
+
+```bash
+docker compose ps
 ```
 
 ### 4. Peupler la base de données
@@ -127,14 +127,13 @@ docker exec pct-backend php artisan db:seed
 | API via Nginx | http://localhost:8000/api/v1 |
 | Documentation Swagger | http://localhost:8000/swagger |
 
-> Le frontend (port 3000) et l'API (port 8000/api/v1) sont les deux points d'entrée.  
 > MySQL n'est **pas** exposé à l'extérieur du réseau Docker.
 
 ---
 
 ## Comptes de démo
 
-Après `db:seed` (`php artisan db:seed` ou `migrate:fresh --seed`) :
+Après `db:seed` :
 
 > Tous les utilisateurs se connectent avec leur **email institutionnel `@uvci.edu.ci`**.
 
@@ -143,6 +142,8 @@ Après `db:seed` (`php artisan db:seed` ou `migrate:fresh --seed`) :
 | Email | Mot de passe | Dashboard |
 |-------|--------------|-----------|
 | `admin@uvci.edu.ci` | `Admin@2026` | http://localhost:3000/admin |
+
+> L'admin peut créer, modifier et désactiver tous les comptes depuis le dashboard.
 
 ### Secrétaires
 
@@ -163,11 +164,11 @@ Après `db:seed` (`php artisan db:seed` ou `migrate:fresh --seed`) :
 
 ### Création de comptes par l'admin
 
-Quand l'admin crée un enseignant ou une secrétaire :
-- **Identifiant de connexion** = email institutionnel saisi (ex : `prenom.nom@uvci.edu.ci`)
+Quand l'admin crée un enseignant ou une secrétaire depuis le dashboard :
+- **Identifiant de connexion** = email institutionnel saisi (`prenom.nom@uvci.edu.ci`)
 - **Mot de passe fourni** → utilisé tel quel
 - **Mot de passe non fourni** → généré automatiquement : `Pct@{année}` (ex : `Pct@2026`)
-- Le mot de passe généré est retourné dans la réponse API pour communication à l'utilisateur
+- Le mot de passe généré est retourné dans la réponse API
 
 ---
 
@@ -177,23 +178,24 @@ Quand l'admin crée un enseignant ou une secrétaire :
 
 1. **Server Component layout** — `cookies()` côté serveur, redirect HTTP 307 immédiat si non authentifié
 2. **Nested layout par rôle** — chaque section (`/admin`, `/secretaire`, `/enseignant`) vérifie le rôle côté serveur avant tout rendu
-3. **AuthGuard client** — vérifie le token Zustand (`!!token`) pour protéger les transitions client-side
+3. **AuthGuard client** — vérifie `!!token` dans Zustand pour protéger les transitions client-side
 
 ### Contrôle d'accès API (backend)
 
-Le middleware `role:` est appliqué sur chaque groupe de routes :
+Middleware `role:` appliqué sur chaque groupe de routes. Aucune session Laravel — authentification **Bearer token uniquement** (pas de CSRF).
 
 | Routes | Rôles autorisés |
 |--------|----------------|
 | `GET /enseignants`, `GET /volumes`, lecture générale | `admin`, `secretaire` |
-| `POST/PUT/DELETE /enseignants`, CRUD complet | `admin` uniquement |
-| `GET /secretaires`, CRUD secrétaires | `admin` uniquement |
+| `POST/PUT/PATCH/DELETE /enseignants` | `admin` |
+| `GET/POST/PUT/PATCH/DELETE /secretaires` | `admin` |
+| `GET/POST/PUT/DELETE /departements`, `/cours`, `/attributions`, `/annees` | écriture: `admin` / lecture: selon ressource |
 | `POST /volumes/{id}/valider` | `admin`, `secretaire` |
-| `GET /attributions`, `GET /activites` | tous (filtrés par rôle côté serveur) |
-| `POST /activites` (déclaration) | `admin`, `enseignant` |
-| `GET /exports/*`, `GET /parametres` | `admin` uniquement |
+| `GET /attributions`, `GET /activites` | tous authentifiés (filtrés par rôle côté controller) |
+| `POST /activites` | `admin`, `enseignant` |
+| `GET /parametres`, `GET /exports/*` | `admin` |
 
-> Un enseignant ne voit que **ses propres** attributions et activités (filtre automatique dans le controller).
+> Un enseignant ne voit que **ses propres** attributions et activités — filtre automatique dans le controller.
 
 ---
 
@@ -209,11 +211,11 @@ Accept: application/json
 
 | Méthode | Endpoint | Description |
 |---------|----------|-------------|
-| `POST` | `/api/v1/login` | Connexion — retourne un token Sanctum + profil |
-| `POST` | `/api/v1/logout` | Déconnexion (révoque le token) |
+| `POST` | `/api/v1/login` | Connexion avec email ou login — retourne token Sanctum + profil |
+| `POST` | `/api/v1/logout` | Déconnexion (révoque le token courant) |
 | `GET` | `/api/v1/me` | Profil de l'utilisateur connecté |
 
-### Ressources
+### Ressources (authentifié)
 
 | Ressource | Endpoint | Rôles |
 |-----------|----------|-------|
@@ -222,38 +224,49 @@ Accept: application/json
 | Départements | `/api/v1/departements` | lecture: admin+sec / écriture: admin |
 | Années académiques | `/api/v1/annees` | lecture: tous / écriture: admin |
 | Cours | `/api/v1/cours` | lecture: tous / écriture: admin |
-| Attributions | `/api/v1/attributions` | lecture: tous (filtrés) / écriture: admin |
+| Attributions | `/api/v1/attributions` | lecture: tous (filtrées) / écriture: admin |
 | Activités pédagogiques | `/api/v1/activites` | lecture: tous (filtrées) / création: admin+ens |
 | Volumes horaires | `/api/v1/volumes` | admin+sec |
 | Valider un volume | `/api/v1/volumes/{id}/valider` | admin+sec |
 | Paramètres VHN | `/api/v1/parametres` | admin |
-| Export CSV | `/api/v1/exports/pdf` | admin |
+| Export CSV | `/api/v1/exports/pdf` et `/exports/excel` | admin |
 
 ---
 
 ## Commandes Docker
 
 ```bash
-# Démarrer en arrière-plan
-docker compose up -d
+# Premier lancement ou après modification du code source
+docker compose up --build -d
 
-# Voir les logs
-docker compose logs -f
-docker compose logs -f backend
-docker compose logs -f frontend
+# Simple redémarrage sans modification (conserve les images existantes)
+docker compose restart
 
 # Arrêter proprement (conserve les données)
 docker compose down
 
-# Réinitialiser complètement (supprime la base)
+# Réinitialiser complètement (supprime la base de données)
 docker compose down -v
-docker compose up --build
+docker compose up --build -d
+docker exec pct-backend php artisan db:seed
 
-# Rebuilder seulement le frontend
-docker compose up --build --no-deps frontend
+# Rebuilder un seul service
+docker compose up --build --no-deps -d backend
+docker compose up --build --no-deps -d frontend
+
+# Voir les logs en temps réel
+docker compose logs -f
+docker compose logs -f backend
+docker compose logs -f frontend
+
+# Statut des conteneurs
+docker compose ps
 
 # Seeder la base de données
 docker exec pct-backend php artisan db:seed
+
+# Réinitialiser la base + reseed
+docker exec pct-backend php artisan migrate:fresh --seed --force
 
 # Vider les caches Laravel
 docker exec pct-backend php artisan optimize:clear
@@ -319,7 +332,7 @@ Réseau interne Docker uniquement :
 
 | Variable | Description | Obligatoire |
 |----------|-------------|-------------|
-| `APP_KEY` | Clé de chiffrement Laravel | Oui |
+| `APP_KEY` | Clé de chiffrement Laravel (base64:...) | Oui |
 | `DB_DATABASE` | Nom de la base MySQL | Oui |
 | `DB_USERNAME` | Utilisateur MySQL | Oui |
 | `DB_PASSWORD` | Mot de passe MySQL | Oui |
@@ -334,11 +347,24 @@ Réseau interne Docker uniquement :
 | Branche | Rôle |
 |---------|------|
 | `main` | Code stable de référence |
-| `PCT_frontend` | Développement actif (frontend + backend) |
+| `PCT_frontend` | Branche de développement actif |
 
 ---
 
 ## Dépannage
+
+**Erreur 419 CSRF au login :**
+```bash
+# Rebuilder le backend (vérifier que statefulApi() est absent de bootstrap/app.php)
+docker compose up --build --no-deps -d backend
+```
+
+**Erreur 403 après un migrate:fresh (token expiré/invalide) :**
+```
+# Vider le localStorage dans le navigateur
+# F12 → Console → coller :
+localStorage.clear(); document.cookie="pct_user=;path=/;max-age=0"; location.href="/login";
+```
 
 **Erreurs 401 sur toutes les requêtes API :**
 ```bash
@@ -348,15 +374,15 @@ docker exec pct-backend php artisan db:seed
 ```
 
 **Redirection en boucle vers /login :**
-```bash
-# Vider le localStorage dans le navigateur (F12 → Application → Local Storage)
-# OU ouvrir une fenêtre privée et se reconnecter
+```
+# Ouvrir une fenêtre privée et se reconnecter
+# OU vider le localStorage (F12 → Application → Local Storage → tout supprimer)
 ```
 
 **Migrations échouent au démarrage :**
 ```bash
 docker compose down -v
-docker compose up --build
+docker compose up --build -d
 docker exec pct-backend php artisan db:seed
 ```
 
@@ -367,10 +393,11 @@ netstat -ano | findstr :3000
 netstat -ano | findstr :8000
 ```
 
-**Rebuilder un seul service :**
+**Après modification du code source (backend ou frontend) :**
 ```bash
-docker compose up --build --no-deps backend
-docker compose up --build --no-deps frontend
+# Toujours rebuilder pour intégrer les changements dans l'image
+docker compose up --build -d
+# NE PAS utiliser seulement "docker compose restart" — recharge l'ancienne image
 ```
 
 **Vider tous les caches Laravel :**
