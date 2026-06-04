@@ -54,14 +54,15 @@ export default function AdminAttributions() {
     queryFn: () => api.get<PaginatedResponse<Attribution>>("/attributions").then(r => r.data),
   });
 
-  const { data: enseignants } = useQuery({
+  // Même queryFn que les pages principales pour éviter les conflits de cache
+  const { data: enseignantsData } = useQuery({
     queryKey: ["enseignants"],
-    queryFn: () => api.get<PaginatedResponse<Enseignant>>("/enseignants").then(r => r.data.data),
+    queryFn: () => api.get<PaginatedResponse<Enseignant>>("/enseignants").then(r => r.data),
   });
 
-  const { data: cours } = useQuery({
+  const { data: coursData } = useQuery({
     queryKey: ["cours"],
-    queryFn: () => api.get<PaginatedResponse<Cours>>("/cours").then(r => r.data.data),
+    queryFn: () => api.get<PaginatedResponse<Cours>>("/cours").then(r => r.data),
   });
 
   const { data: annees } = useQuery({
@@ -224,8 +225,8 @@ export default function AdminAttributions() {
         open={dialogOpen}
         onClose={closeDialog}
         editing={editing}
-        enseignants={enseignants ?? []}
-        cours={cours ?? []}
+        enseignants={enseignantsData?.data ?? []}
+        cours={coursData?.data ?? []}
         annees={annees ?? []}
         onSubmit={d => editing
           ? updateMutation.mutate({ id: editing.id, payload: d })

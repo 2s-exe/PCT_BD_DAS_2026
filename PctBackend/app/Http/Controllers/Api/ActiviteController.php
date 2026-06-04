@@ -11,7 +11,12 @@ class ActiviteController extends Controller
     #[OA\Get(path:"/activites",tags:["Activités"],summary:"Liste des activités pédagogiques",security:[["sanctum" => []]],parameters:[new OA\Parameter(name:"id_enseignant",in:"query",required:false,schema:new OA\Schema(type:"integer"))],responses:[new OA\Response(response:200,description:"Liste")])]
     public function index(Request $request) {
         $q = ActivitePedagogique::with(['attribution.enseignant','attribution.cours','annee']);
-        if ($id = $request->id_enseignant) $q->whereHas('attribution',fn($w)=>$w->where('enseignant_id',$id));
+        $user = $request->user();
+        if ($user->role === 'enseignant') {
+            $q->whereHas('attribution', fn($w) => $w->where('enseignant_id', $user->enseignant?->id));
+        } elseif ($id = $request->id_enseignant) {
+            $q->whereHas('attribution', fn($w) => $w->where('enseignant_id', $id));
+        }
         return $q->latest()->paginate(50);
     }
 
@@ -29,7 +34,10 @@ class ActiviteController extends Controller
     public function store(Request $request) {
         $data = $request->validate(['id_attribution'=>'required|exists:attributions,id','id_annee'=>'required|exists:annees_academiques,id','type_operation'=>'required|in:creation,mise_a_jour','niveau_complexite'=>'required|in:simple,intermediaire,complexe','date_activite'=>'required|date','observations'=>'nullable']);
         $p = ParametreCalcul::where('type_operation',$data['type_operation'])->where('niveau_complexite',$data['niveau_complexite'])->first();
-        $volume = $p ? $p->coefficient_vhn : 1;
+        if (!$p) {
+            return response()->json(['message' => 'Paramètre VHN introuvable pour ce type d\'opération et niveau de complexité.'], 422);
+        }
+        $volume = $p->coefficient_vhn;
         $activite = ActivitePedagogique::create(['type_operation'=>$data['type_operation'],'niveau_complexite'=>$data['niveau_complexite'],'date_activite'=>$data['date_activite'],'volume_horaire'=>$volume,'observations'=>$data['observations']??null,'attribution_id'=>$data['id_attribution'],'annee_id'=>$data['id_annee']]);
         return response()->json($activite->load(['attribution.enseignant','attribution.cours','annee']),201);
     }

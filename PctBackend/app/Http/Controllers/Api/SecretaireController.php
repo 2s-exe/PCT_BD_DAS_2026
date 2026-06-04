@@ -11,8 +11,9 @@ class SecretaireController extends Controller
 {
     #[OA\Get(path:"/secretaires",tags:["Secrétaires"],summary:"Liste des secrétaires",security:[["sanctum" => []]],responses:[new OA\Response(response:200,description:"Liste")])]
     public function index() {
+        $logins = User::whereNotNull('secretaire_id')->pluck('login', 'secretaire_id');
         return Secretaire::all()->map(fn($s) => array_merge($s->toArray(), [
-            'login' => User::where('secretaire_id',$s->id)->value('login') ?? '',
+            'login' => $logins[$s->id] ?? '',
         ]));
     }
 
@@ -25,10 +26,25 @@ class SecretaireController extends Controller
         responses:[new OA\Response(response:201,description:"Créée")]
     )]
     public function store(Request $request) {
-        $data = $request->validate(['nom'=>'required','prenom'=>'required','email'=>'required|email|unique:secretaires','telephone'=>'nullable','login'=>'required|unique:users,login','password'=>'required|min:6']);
+        $data = $request->validate([
+            'nom'       => 'required',
+            'prenom'    => 'required',
+            'email'     => 'required|email|unique:secretaires|unique:users,email',
+            'telephone' => 'nullable',
+            'password'  => 'required|min:6',
+        ]);
         $s = Secretaire::create($data);
-        User::create(['name'=>"{$s->prenom} {$s->nom}",'login'=>$data['login'],'email'=>$s->email,'password'=>Hash::make($data['password']),'role'=>'secretaire','secretaire_id'=>$s->id]);
-        return response()->json(array_merge($s->toArray(),['login'=>$data['login']]),201);
+        // Le login = email institutionnel
+        User::create([
+            'name'         => "{$s->prenom} {$s->nom}",
+            'login'        => $s->email,
+            'email'        => $s->email,
+            'password'     => Hash::make($data['password']),
+            'role'         => 'secretaire',
+            'secretaire_id'=> $s->id,
+            'actif'        => true,
+        ]);
+        return response()->json(array_merge($s->toArray(), ['login' => $s->email]), 201);
     }
 
     #[OA\Get(path:"/secretaires/{id}",tags:["Secrétaires"],summary:"Détail",security:[["sanctum" => []]],parameters:[new OA\Parameter(name:"id",in:"path",required:true,schema:new OA\Schema(type:"integer"))],responses:[new OA\Response(response:200,description:"Secrétaire")])]

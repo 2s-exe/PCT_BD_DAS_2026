@@ -27,6 +27,9 @@ class VolumeController extends Controller
         responses:[new OA\Response(response:200,description:"Volume validé/rejeté")]
     )]
     public function valider(Request $request, VolumeHoraire $volume) {
+        if (!in_array($request->user()->role, ['secretaire', 'admin'])) {
+            return response()->json(['message' => 'Non autorisé.'], 403);
+        }
         $data = $request->validate(['statut_validation'=>'required|in:valide,rejete','observations'=>'nullable']);
         $validation = $volume->validation;
         if ($validation) {

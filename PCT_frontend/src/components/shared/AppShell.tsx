@@ -99,6 +99,10 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Guard: if authenticated user's role doesn't match the shell's expected role,
+  // render nothing — middleware + AuthGuard should already prevent this path.
+  if (user && user.role !== role) return null;
+
   const initials = user
     ? `${user.enseignant?.nom?.[0] ?? ""}${user.enseignant?.prenom?.[0] ?? "A"}`.toUpperCase()
     : "U";

@@ -11,21 +11,22 @@ export function AuthGuard({
   children: React.ReactNode;
   requiredRole?: Role;
 }) {
-  const router   = useRouter();
-  const { user, isAuthenticated } = useAuthStore();
+  const router = useRouter();
+  // Utiliser token (primitif réactif) au lieu de isAuthenticated (fonction non-réactive)
+  const { user, token } = useAuthStore();
+  const authenticated = !!token;
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!authenticated) {
       router.replace("/login");
       return;
     }
     if (requiredRole && user?.role !== requiredRole) {
       router.replace(`/${user?.role ?? ""}`);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, user?.role, requiredRole]);
+  }, [authenticated, user?.role, requiredRole, router]);
 
-  if (!isAuthenticated) return null;
+  if (!authenticated) return null;
   if (requiredRole && user?.role !== requiredRole) return null;
 
   return <>{children}</>;

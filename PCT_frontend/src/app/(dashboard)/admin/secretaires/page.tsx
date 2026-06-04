@@ -30,15 +30,14 @@ import {
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errors";
-import type { PaginatedResponse, Secretaire } from "@/types";
+import type { Secretaire } from "@/types";
 
 // ─── Schéma de validation ─────────────────────────────────────
 const secretaireSchema = z.object({
   nom:        z.string().min(2, "Minimum 2 caractères"),
   prenom:     z.string().min(2, "Minimum 2 caractères"),
-  email:      z.string().email("Email invalide"),
+  email:      z.string().email("Email invalide").refine(v => v.endsWith("@uvci.edu.ci"), "Doit être une adresse @uvci.edu.ci"),
   telephone:  z.string().optional(),
-  login:      z.string().min(3, "Minimum 3 caractères"),
   password:   z.string().min(6, "Minimum 6 caractères").optional().or(z.literal("")),
 });
 type SecretaireFormData = z.infer<typeof secretaireSchema>;
@@ -52,8 +51,7 @@ export default function AdminSecretaires() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["secretaires"],
-    queryFn: () =>
-      api.get<PaginatedResponse<Secretaire>>("/secretaires").then(r => r.data),
+    queryFn: () => api.get<Secretaire[]>("/secretaires").then(r => r.data),
   });
 
   const createMutation = useMutation({
@@ -100,7 +98,7 @@ export default function AdminSecretaires() {
   };
 
   // Filtrage côté client sur les données reçues
-  const rows = (data?.data ?? []).filter(s => {
+  const rows = (data ?? []).filter(s => {
     if (!search) return true;
     const q = search.toLowerCase();
     return (
@@ -276,10 +274,9 @@ function SecretaireDialog({
           prenom:    editing.prenom,
           email:     editing.email,
           telephone: editing.telephone ?? "",
-          login:     editing.login,
           password:  "",
         }
-      : { nom: "", prenom: "", email: "", telephone: "", login: "", password: "" },
+      : { nom: "", prenom: "", email: "", telephone: "", password: "" },
   });
 
   const handleClose = () => { reset(); onClose(); };
@@ -308,9 +305,10 @@ function SecretaireDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" {...register("email")} placeholder="aminata.kone@uvci.edu.ci" />
+            <Label htmlFor="email">Email institutionnel</Label>
+            <Input id="email" type="email" {...register("email")} placeholder="prenom.nom@uvci.edu.ci" />
             {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+            <p className="text-xs text-muted-foreground">Cet email servira d'identifiant de connexion.</p>
           </div>
 
           <div className="space-y-1.5">
@@ -318,20 +316,13 @@ function SecretaireDialog({
             <Input id="telephone" {...register("telephone")} placeholder="+225 07 00 00 00 00" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="login">Login</Label>
-              <Input id="login" {...register("login")} placeholder="a.kone" />
-              {errors.login && <p className="text-xs text-destructive">{errors.login.message}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="password">
-                Mot de passe
-                {editing && <span className="text-muted-foreground text-xs ml-1">(laisser vide = inchangé)</span>}
-              </Label>
-              <Input id="password" type="password" {...register("password")} placeholder="••••••••" />
-              {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
-            </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="password">
+              Mot de passe
+              {editing && <span className="text-muted-foreground text-xs ml-1">(laisser vide = inchangé)</span>}
+            </Label>
+            <Input id="password" type="password" {...register("password")} placeholder="••••••••" />
+            {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
           </div>
 
           {error && (

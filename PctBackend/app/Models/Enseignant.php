@@ -8,6 +8,7 @@ class Enseignant extends Model
     protected $appends = ['nom_complet'];
     public function getNomCompletAttribute(): string { return $this->prenom . ' ' . $this->nom; }
     public function departement() { return $this->belongsTo(Departement::class); }
+    public function user() { return $this->hasOne(User::class); }
     public function attributions() { return $this->hasMany(Attribution::class); }
     public function volumes() { return $this->hasMany(VolumeHoraire::class); }
 }

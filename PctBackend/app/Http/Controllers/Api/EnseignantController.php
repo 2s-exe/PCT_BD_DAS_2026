@@ -51,13 +51,33 @@ class EnseignantController extends Controller
             'departement_id'=>'nullable|exists:departements,id',
             'login'=>'nullable|string|unique:users,login','password'=>'nullable|min:6',
         ]);
+
         $enseignant = Enseignant::create($data);
-        if (!empty($data['login']) && !empty($data['password'])) {
-            User::create(['name'=>"{$enseignant->prenom} {$enseignant->nom}",'login'=>$data['login'],
-                'email'=>$enseignant->email,'password'=>Hash::make($data['password']),
-                'role'=>'enseignant','enseignant_id'=>$enseignant->id]);
-        }
-        return response()->json($enseignant->load('departement'),201);
+
+        // Le login = email institutionnel de l'enseignant
+        $login = $enseignant->email;
+
+        // Mot de passe par défaut : Pct@{année courante}
+        $password = !empty($data['password']) ? $data['password'] : 'Pct@' . date('Y');
+        $passwordGenerated = empty($data['password']);
+
+        User::create([
+            'name'          => "{$enseignant->prenom} {$enseignant->nom}",
+            'login'         => $login,
+            'email'         => $enseignant->email,
+            'password'      => Hash::make($password),
+            'role'          => 'enseignant',
+            'enseignant_id' => $enseignant->id,
+            'actif'         => true,
+        ]);
+
+        return response()->json(
+            array_merge($enseignant->load('departement')->toArray(), [
+                'login'              => $login,
+                'generated_password' => $passwordGenerated ? $password : null,
+            ]),
+            201
+        );
     }
 
     #[OA\Get(path:"/enseignants/{id}",tags:["Enseignants"],summary:"Détail d'un enseignant",
@@ -83,7 +103,12 @@ class EnseignantController extends Controller
             'departement_id'=>'nullable|exists:departements,id','login'=>'nullable|string','password'=>'nullable|min:6',
         ]);
         $enseignant->update($data);
-        if (!empty($data['password'])) $enseignant->user?->update(['password'=>Hash::make($data['password'])]);
+        if ($enseignant->user) {
+            $userChanges = [];
+            if (!empty($data['login'])) $userChanges['login'] = $data['login'];
+            if (!empty($data['password'])) $userChanges['password'] = Hash::make($data['password']);
+            if ($userChanges) $enseignant->user->update($userChanges);
+        }
         return $enseignant->load('departement');
     }
 

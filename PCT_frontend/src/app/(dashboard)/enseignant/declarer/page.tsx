@@ -15,6 +15,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { Attribution, AnneeAcademique } from "@/types";
+import { useAuthStore } from "@/store/authStore";
 
 const schema = z.object({
   id_attribution:    z.string().min(1, "Sélectionnez un cours"),
@@ -29,10 +30,14 @@ type FormData = z.infer<typeof schema>;
 
 export default function DeclarerActivite() {
   const router = useRouter();
+  const { user } = useAuthStore();
+  const enseignantId = user?.enseignant?.id;
 
   const { data: attributions } = useQuery({
-    queryKey: ["mes-attributions"],
-    queryFn: () => api.get<{ data: Attribution[] }>("/attributions").then(r => r.data.data),
+    queryKey: ["mes-attributions", enseignantId],
+    queryFn: () =>
+      api.get<{ data: Attribution[] }>(`/attributions?id_enseignant=${enseignantId}`).then(r => r.data.data),
+    enabled: !!enseignantId,
   });
 
   const { data: annees } = useQuery({
