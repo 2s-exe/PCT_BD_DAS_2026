@@ -4,37 +4,48 @@ import { StatCard } from "@/components/shared/StatCard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Users, Clock, CheckCircle2, AlertTriangle, Download, ArrowUpRight } from "lucide-react";
+import { Users, Clock, CheckCircle2, AlertTriangle, Download } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   LineChart, Line, CartesianGrid,
 } from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
 
-const dept = [
-  { name: "Info.",    h: 4820 }, { name: "Maths",   h: 3950 },
-  { name: "Gestion", h: 4210 }, { name: "Lettres",  h: 2890 },
-  { name: "Éco.",    h: 3640 }, { name: "Droit",    h: 3120 },
-];
+interface DashboardStats {
+  kpis: {
+    enseignants: number;
+    enseignants_actifs: number;
+    heures_total: number;
+    heures_validees: number;
+    volumes_en_attente: number;
+  };
+  par_departement: { name: string; h: number }[];
+  evolution_mensuelle: { m: string; h: number }[];
+  activites_recentes: { id: number; titre: string; who: string; date: string; tone: string }[];
+}
 
-const monthly = [
-  { m: "Sep", h: 6200 }, { m: "Oct", h: 7400 }, { m: "Nov", h: 8100 },
-  { m: "Déc", h: 5800 }, { m: "Jan", h: 8950 }, { m: "Fév", h: 9420 },
-  { m: "Mar", h: 10120 },
-];
-
-const activity = [
-  { t: "Validation lot avril",         who: "Mme. Bamba (Sec.)", time: "il y a 12 min", tone: "success" },
-  { t: "Dépassement détecté — Pr. Diallo", who: "Système",       time: "il y a 1 h",   tone: "warning" },
-  { t: "Nouvel enseignant — Dr. Kouamé",   who: "Admin",         time: "il y a 3 h",   tone: "info" },
-  { t: "Export rapport mensuel mars",      who: "Vous",          time: "hier",          tone: "default" },
-];
+function fmt(n: number) {
+  return n >= 1000 ? `${(n / 1000).toFixed(1)} k` : String(n);
+}
 
 export default function AdminDashboard() {
+  const { data, isLoading } = useQuery<DashboardStats>({
+    queryKey: ["dashboard-stats"],
+    queryFn: () => api.get<DashboardStats>("/dashboard/stats").then(r => r.data),
+    staleTime: 60_000,
+  });
+
+  const kpis = data?.kpis;
+  const pctValidees = kpis && kpis.heures_total > 0
+    ? Math.round((kpis.heures_validees / kpis.heures_total) * 100)
+    : 0;
+
   return (
     <AppShell role="admin">
       <PageHeader
         title="Vue d'ensemble"
-        description="Pilotage global des activités pédagogiques — Année 2024-2025"
+        description="Pilotage global des activités pédagogiques"
         actions={
           <>
             <Button variant="outline" size="sm">
@@ -51,10 +62,34 @@ export default function AdminDashboard() {
 
       {/* KPIs */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Enseignants"     value="1 248"    delta="+24 ce mois"   icon={Users}        tone="primary" />
-        <StatCard label="Heures totales"  value="84 560 h" delta="+8.2% vs N-1"  icon={Clock}        tone="info" />
-        <StatCard label="Validées"        value="72 120 h" delta="85% du volume" icon={CheckCircle2} tone="success" />
-        <StatCard label="En attente"      value="1 840 h"  delta="42 activités"  icon={AlertTriangle} tone="warning" />
+        <StatCard
+          label="Enseignants"
+          value={isLoading ? "…" : String(kpis?.enseignants ?? 0)}
+          delta={`${kpis?.enseignants_actifs ?? 0} actifs`}
+          icon={Users}
+          tone="primary"
+        />
+        <StatCard
+          label="Heures totales"
+          value={isLoading ? "…" : `${fmt(kpis?.heures_total ?? 0)} h`}
+          delta="heures réalisées"
+          icon={Clock}
+          tone="info"
+        />
+        <StatCard
+          label="Validées"
+          value={isLoading ? "…" : `${fmt(kpis?.heures_validees ?? 0)} h`}
+          delta={`${pctValidees}% du volume`}
+          icon={CheckCircle2}
+          tone="success"
+        />
+        <StatCard
+          label="En attente"
+          value={isLoading ? "…" : String(kpis?.volumes_en_attente ?? 0)}
+          delta="volumes à valider"
+          icon={AlertTriangle}
+          tone="warning"
+        />
       </div>
 
       {/* Graphiques */}
@@ -63,17 +98,17 @@ export default function AdminDashboard() {
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <div>
               <h3 className="font-display font-semibold text-sm md:text-base">Heures par département</h3>
-              <p className="text-xs text-muted-foreground">Cumul depuis septembre 2024</p>
+              <p className="text-xs text-muted-foreground">Cumul volumes horaires réalisés</p>
             </div>
-            <Badge variant="secondary">6 départements</Badge>
+            <Badge variant="secondary">{data?.par_departement.length ?? 0} départements</Badge>
           </div>
           <div className="h-56 md:h-72">
             <ResponsiveContainer>
-              <BarChart data={dept} margin={{ left: -10, right: 0 }}>
+              <BarChart data={data?.par_departement ?? []} margin={{ left: -10, right: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} />
                 <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip />
+                <Tooltip formatter={(v: number) => [`${v} h`, "Heures"]} />
                 <Bar dataKey="h" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -82,70 +117,46 @@ export default function AdminDashboard() {
 
         <Card className="p-4 md:p-6 shadow-soft">
           <h3 className="font-display font-semibold text-sm md:text-base">Évolution mensuelle</h3>
-          <p className="text-xs text-muted-foreground">Heures déclarées</p>
+          <p className="text-xs text-muted-foreground">VHN déclarés (12 derniers mois)</p>
           <div className="h-44 md:h-56 mt-4">
             <ResponsiveContainer>
-              <LineChart data={monthly} margin={{ left: -10, right: 0 }}>
+              <LineChart data={data?.evolution_mensuelle ?? []} margin={{ left: -10, right: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                 <XAxis dataKey="m" tick={{ fontSize: 10 }} />
                 <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip />
+                <Tooltip formatter={(v: number) => [`${v} h`, "VHN"]} />
                 <Line type="monotone" dataKey="h" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <div className="mt-4 flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Mars 2025</span>
-            <span className="text-green-600 font-medium flex items-center gap-1">
-              <ArrowUpRight className="h-3 w-3" /> +6.9%
-            </span>
-          </div>
         </Card>
       </div>
 
-      {/* Activité + Alertes */}
-      <div className="grid gap-4 lg:grid-cols-3 mt-6">
-        <Card className="p-4 md:p-6 lg:col-span-2 shadow-soft">
+      {/* Activité récente */}
+      <div className="mt-6">
+        <Card className="p-4 md:p-6 shadow-soft">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-display font-semibold text-sm md:text-base">Activité récente</h3>
-            <Button variant="link" className="text-primary px-0 text-sm">Tout voir</Button>
           </div>
-          <ul className="divide-y">
-            {activity.map((a, i) => (
-              <li key={i} className="py-3 flex items-center gap-3">
-                <div className={`h-2 w-2 shrink-0 rounded-full ${
-                  a.tone === "success" ? "bg-green-500" :
-                  a.tone === "warning" ? "bg-amber-500" :
-                  a.tone === "info"    ? "bg-blue-500"  : "bg-muted-foreground"
-                }`} />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{a.t}</div>
-                  <div className="text-xs text-muted-foreground">{a.who}</div>
-                </div>
-                <div className="text-xs text-muted-foreground shrink-0">{a.time}</div>
-              </li>
-            ))}
-          </ul>
-        </Card>
-
-        <Card className="p-4 md:p-6 shadow-soft bg-gradient-primary text-white border-0">
-          <h3 className="font-display font-semibold text-sm md:text-base">Alertes en cours</h3>
-          <p className="text-xs text-white/80 mt-1">3 anomalies à traiter</p>
-          <div className="mt-4 space-y-2">
-            {[
-              { t: "Pr. Diallo — dépassement de 28h", d: "Département Informatique" },
-              { t: "Dr. Konan — activité non liée",   d: "Cours non référencé" },
-              { t: "Mme Yao — déclaration tardive",   d: "Décembre 2024" },
-            ].map((al) => (
-              <div key={al.t} className="bg-white/10 rounded-lg p-3">
-                <div className="text-sm font-medium">{al.t}</div>
-                <div className="text-xs text-white/70 mt-0.5">{al.d}</div>
-              </div>
-            ))}
-          </div>
-          <Button variant="outline" className="mt-4 w-full bg-white text-primary hover:bg-white/90 border-0">
-            Traiter les alertes
-          </Button>
+          {isLoading ? (
+            <div className="text-sm text-muted-foreground text-center py-4">Chargement…</div>
+          ) : (
+            <ul className="divide-y">
+              {(data?.activites_recentes ?? []).map((a) => (
+                <li key={a.id} className="py-3 flex items-center gap-3">
+                  <div className="h-2 w-2 shrink-0 rounded-full bg-blue-500" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium truncate">{a.titre}</div>
+                    <div className="text-xs text-muted-foreground">{a.who}</div>
+                  </div>
+                  <div className="text-xs text-muted-foreground shrink-0">{a.date}</div>
+                </li>
+              ))}
+              {!data?.activites_recentes?.length && (
+                <li className="py-6 text-center text-sm text-muted-foreground">Aucune activité récente</li>
+              )}
+            </ul>
+          )}
         </Card>
       </div>
     </AppShell>

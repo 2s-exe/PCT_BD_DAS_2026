@@ -3,8 +3,10 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Enseignant;
 use App\Models\User;
+use App\Notifications\CompteCreeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
 
 class EnseignantController extends Controller
@@ -71,6 +73,14 @@ class EnseignantController extends Controller
             'actif'         => true,
         ]);
 
+        // Notification email de création de compte
+        $createdUser = User::where('enseignant_id', $enseignant->id)->first();
+        if ($createdUser) {
+            try {
+                $createdUser->notify(new CompteCreeNotification($login, $password, 'enseignant'));
+            } catch (\Exception) { /* ne pas bloquer si le mail échoue */ }
+        }
+
         return response()->json(
             array_merge($enseignant->load('departement')->toArray(), [
                 'login'              => $login,
@@ -118,6 +128,84 @@ class EnseignantController extends Controller
         responses:[new OA\Response(response:204,description:"Supprimé")]
     )]
     public function destroy(Enseignant $enseignant) { $enseignant->delete(); return response()->json(null,204); }
+
+    #[OA\Post(path:"/enseignants/import",tags:["Enseignants"],summary:"Importer des enseignants depuis un fichier CSV",
+        security:[["sanctum" => []]],
+        requestBody:new OA\RequestBody(required:true,content:new OA\MediaType(mediaType:"multipart/form-data",schema:new OA\Schema(required:["file"],properties:[new OA\Property(property:"file",type:"string",format:"binary")]))),
+        responses:[new OA\Response(response:200,description:"Résultat de l'import")]
+    )]
+    public function importCsv(Request $request)
+    {
+        $request->validate(['file' => 'required|file|mimes:csv,txt|max:2048']);
+
+        $handle  = fopen($request->file('file')->getRealPath(), 'r');
+        $headers = array_map('trim', fgetcsv($handle, 0, ',') ?: []);
+
+        $imported = [];
+        $errors   = [];
+        $line     = 1;
+
+        while (($row = fgetcsv($handle, 0, ',')) !== false) {
+            $line++;
+            if (count($row) !== count($headers)) {
+                $errors[] = ['ligne' => $line, 'erreur' => 'Nombre de colonnes incorrect.'];
+                continue;
+            }
+            $data = array_combine($headers, array_map('trim', $row));
+
+            $v = Validator::make($data, [
+                'nom'          => 'required|string',
+                'prenom'       => 'required|string',
+                'email'        => 'required|email|unique:enseignants',
+                'grade'        => 'required|in:Assistant,Maitre-Assistant,Professeur',
+                'statut'       => 'required|in:Permanent,Vacataire',
+                'taux_horaire' => 'required|numeric|min:0',
+            ]);
+
+            if ($v->fails()) {
+                $errors[] = ['ligne' => $line, 'erreur' => implode(', ', $v->errors()->all())];
+                continue;
+            }
+
+            $enseignant = Enseignant::create([
+                'nom'            => $data['nom'],
+                'prenom'         => $data['prenom'],
+                'email'          => $data['email'],
+                'telephone'      => $data['telephone'] ?? null,
+                'grade'          => $data['grade'],
+                'statut'         => $data['statut'],
+                'taux_horaire'   => (float) $data['taux_horaire'],
+                'departement_id' => !empty($data['departement_id']) ? (int) $data['departement_id'] : null,
+                'actif'          => true,
+            ]);
+
+            $password = 'Pct@' . date('Y');
+            $user = User::create([
+                'name'          => "{$enseignant->prenom} {$enseignant->nom}",
+                'login'         => $enseignant->email,
+                'email'         => $enseignant->email,
+                'password'      => Hash::make($password),
+                'role'          => 'enseignant',
+                'enseignant_id' => $enseignant->id,
+                'actif'         => true,
+            ]);
+
+            try {
+                $user->notify(new CompteCreeNotification($enseignant->email, $password, 'enseignant'));
+            } catch (\Exception) {}
+
+            $imported[] = $enseignant->nom_complet;
+        }
+
+        fclose($handle);
+
+        return response()->json([
+            'importes'        => count($imported),
+            'erreurs'         => count($errors),
+            'noms_importes'   => $imported,
+            'details_erreurs' => $errors,
+        ]);
+    }
 
     #[OA\Patch(path:"/enseignants/{id}",tags:["Enseignants"],summary:"Activer ou désactiver",
         security:[["sanctum" => []]],

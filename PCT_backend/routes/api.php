@@ -11,12 +11,16 @@ use App\Http\Controllers\Api\AttributionController;
 use App\Http\Controllers\Api\ActiviteController;
 use App\Http\Controllers\Api\VolumeController;
 use App\Http\Controllers\Api\ParametreController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExportController;
+use App\Http\Controllers\Api\PasswordResetController;
 
 Route::prefix('v1')->group(function () {
 
     // ── Public ────────────────────────────────────────────────────────────────
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login',           [AuthController::class,       'login']);
+    Route::post('/forgot-password', [PasswordResetController::class, 'forgot']);
+    Route::post('/reset-password',  [PasswordResetController::class, 'reset']);
 
     // ── Authentifié ───────────────────────────────────────────────────────────
     Route::middleware('auth:sanctum')->group(function () {
@@ -50,6 +54,7 @@ Route::prefix('v1')->group(function () {
         });
         Route::middleware('role:admin,enseignant')->group(function () {
             Route::post('activites',                       [ActiviteController::class, 'store']);
+            Route::put('activites/{activite}',             [ActiviteController::class, 'update']);
         });
 
         // Enseignants — lecture : admin + secrétaire
@@ -68,7 +73,8 @@ Route::prefix('v1')->group(function () {
         // ── Admin uniquement ─────────────────────────────────────────────────
         Route::middleware('role:admin')->group(function () {
 
-            // Enseignants — écriture
+            // Enseignants — écriture + import CSV
+            Route::post('enseignants/import',              [EnseignantController::class, 'importCsv']);
             Route::post('enseignants',                     [EnseignantController::class, 'store']);
             Route::put('enseignants/{enseignant}',         [EnseignantController::class, 'update']);
             Route::patch('enseignants/{enseignant}',       [EnseignantController::class, 'patch']);
@@ -107,6 +113,12 @@ Route::prefix('v1')->group(function () {
 
             // Activités — suppression
             Route::delete('activites/{activite}',          [ActiviteController::class, 'destroy']);
+
+            // Dashboard stats (admin)
+            Route::get('dashboard/stats',                  [DashboardController::class, 'stats']);
+
+            // Reset password admin (sans email)
+            Route::post('users/{user}/reset-password',     [PasswordResetController::class, 'adminReset']);
 
             // Paramètres VHN — CRUD complet
             Route::get('parametres',                       [ParametreController::class, 'index']);

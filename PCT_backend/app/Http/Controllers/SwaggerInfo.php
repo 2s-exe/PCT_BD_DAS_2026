@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 /**
  * @OA\Info(
- *     title="PCT UVCI — API REST",
+ *     title="PCT UVCI - API REST",
  *     version="1.0.0",
  *     description="API de gestion des activités pédagogiques et volumes horaires — Université Virtuelle de Côte d'Ivoire",
  *     @OA\Contact(email="admin@uvci.edu.ci")

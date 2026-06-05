@@ -31,6 +31,7 @@ import {
   Plus, Filter, MoreHorizontal, Download,
   Pencil, UserX, UserCheck,
 } from "lucide-react";
+import { ImportCsvButton } from "@/components/shared/ImportCsvButton";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errors";
@@ -122,6 +123,11 @@ export default function AdminEnseignants() {
             <Button variant="outline" size="sm" className="hidden sm:flex">
               <Download className="h-4 w-4 mr-2" />Exporter
             </Button>
+            <ImportCsvButton
+              endpoint="/enseignants/import"
+              label="Importer CSV"
+              onSuccess={() => queryClient.invalidateQueries({ queryKey: ["enseignants"] })}
+            />
             <Button
               className="bg-gradient-primary text-white hover:opacity-95"
               onClick={() => { setEditing(null); setDialogOpen(true); }}

@@ -23,6 +23,9 @@ if [ "$MIGRATE_EXIT" -ne 0 ]; then
   php artisan migrate:fresh --force
 fi
 
+# Publier la config spatie/activitylog si pas encore fait
+php artisan vendor:publish --provider="Spatie\Activitylog\ActivitylogServiceProvider" --tag="activitylog-migrations" --no-interaction 2>/dev/null || true
+
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache

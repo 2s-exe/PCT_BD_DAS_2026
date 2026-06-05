@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\VolumeHoraire;
 use App\Models\Validation;
+use App\Notifications\VolumeValideNotification;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -37,6 +38,16 @@ class VolumeController extends Controller
         } else {
             Validation::create(['volume_id'=>$volume->id,'statut_validation'=>$data['statut_validation'],'observations'=>$data['observations']??null,'date_validation'=>now()]);
         }
-        return $volume->load(['enseignant','annee','validation']);
+        $volume->load(['enseignant.user', 'annee', 'validation']);
+
+        // Notifier l'enseignant par email
+        $userEnseignant = $volume->enseignant?->user;
+        if ($userEnseignant) {
+            try {
+                $userEnseignant->notify(new VolumeValideNotification($volume));
+            } catch (\Exception) { /* ne pas bloquer si le mail échoue */ }
+        }
+
+        return $volume;
     }
 }

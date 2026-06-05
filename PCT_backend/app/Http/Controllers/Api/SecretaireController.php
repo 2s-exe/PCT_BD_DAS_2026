@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Secretaire;
 use App\Models\User;
+use App\Notifications\CompteCreeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use OpenApi\Attributes as OA;
@@ -34,8 +35,7 @@ class SecretaireController extends Controller
             'password'  => 'required|min:6',
         ]);
         $s = Secretaire::create($data);
-        // Le login = email institutionnel
-        User::create([
+        $user = User::create([
             'name'         => "{$s->prenom} {$s->nom}",
             'login'        => $s->email,
             'email'        => $s->email,
@@ -44,6 +44,12 @@ class SecretaireController extends Controller
             'secretaire_id'=> $s->id,
             'actif'        => true,
         ]);
+
+        // Notification email de création de compte
+        try {
+            $user->notify(new CompteCreeNotification($s->email, $data['password'], 'secretaire'));
+        } catch (\Exception) { /* ne pas bloquer si le mail échoue */ }
+
         return response()->json(array_merge($s->toArray(), ['login' => $s->email]), 201);
     }
 
