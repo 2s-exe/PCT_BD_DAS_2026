@@ -12,6 +12,9 @@ import {
 import { Download } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { downloadExport } from "@/lib/download";
+import { getErrorMessage } from "@/lib/errors";
+import { toast } from "sonner";
 import type { PaginatedResponse, ActivitePedagogique } from "@/types";
 
 export default function AdminActivites() {
@@ -37,7 +40,10 @@ export default function AdminActivites() {
         title="Activités pédagogiques"
         description="Toutes les déclarations d'activités soumises"
         actions={
-          <Button variant="outline">
+          <Button
+            variant="outline"
+            onClick={() => downloadExport("/exports/activites", "activites").catch(e => toast.error(getErrorMessage(e)))}
+          >
             <Download className="h-4 w-4 mr-2" />Exporter
           </Button>
         }

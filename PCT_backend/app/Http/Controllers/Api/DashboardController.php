@@ -3,14 +3,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivitePedagogique;
+use App\Models\AnneeAcademique;
 use App\Models\Departement;
 use App\Models\Enseignant;
 use App\Models\VolumeHoraire;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function stats()
+    public function stats(Request $request)
     {
         // ── KPIs ─────────────────────────────────────────────────────────────
         $enseignantsTotal  = Enseignant::count();
@@ -79,5 +81,79 @@ class DashboardController extends Controller
             'evolution_mensuelle' => $evolutionMensuelle,
             'activites_recentes'  => $activitesRecentes,
         ]);
+    }
+
+    public function enseignant(Request $request)
+    {
+        $enseignant = $request->user()->enseignant;
+        if (!$enseignant) {
+            return response()->json(['message' => 'Profil enseignant introuvable.'], 404);
+        }
+
+        $annee = AnneeAcademique::where('active', true)->first();
+        $volumes = VolumeHoraire::with('validation')
+            ->where('enseignant_id', $enseignant->id)
+            ->when($annee, fn($q) => $q->where('annee_id', $annee->id))
+            ->get();
+
+        $heuresRealisees = (float) $volumes->sum('heures_realisees');
+        $heuresPrevues = (float) $volumes->sum('heures_prevues');
+        $heuresValidees = (float) $volumes
+            ->filter(fn($v) => $v->validation?->statut_validation === 'valide')
+            ->sum('heures_realisees');
+        $heuresEnAttente = (float) $volumes
+            ->filter(fn($v) => !$v->validation || $v->validation->statut_validation === 'en_attente')
+            ->sum('heures_realisees');
+
+        $activites = ActivitePedagogique::with(['attribution.cours', 'annee'])
+            ->whereHas('attribution', fn($q) => $q->where('enseignant_id', $enseignant->id))
+            ->when($annee, fn($q) => $q->where('annee_id', $annee->id))
+            ->latest('date_activite')
+            ->take(5)
+            ->get();
+
+        $parType = ActivitePedagogique::select('type_operation', DB::raw('SUM(volume_horaire) as h'))
+            ->whereHas('attribution', fn($q) => $q->where('enseignant_id', $enseignant->id))
+            ->when($annee, fn($q) => $q->where('annee_id', $annee->id))
+            ->groupBy('type_operation')
+            ->get()
+            ->map(fn($row) => [
+                'label' => $row->type_operation === 'creation' ? 'Créations' : 'Mises à jour',
+                'heures' => (float) $row->h,
+            ])
+            ->values();
+
+        return response()->json([
+            'annee' => $annee?->libelle_annee,
+            'kpis' => [
+                'heures_realisees' => $heuresRealisees,
+                'heures_validees' => $heuresValidees,
+                'heures_en_attente' => $heuresEnAttente,
+                'heures_prevues' => $heuresPrevues,
+                'heures_complementaires' => max(0, $heuresRealisees - $heuresPrevues),
+                'activites_en_attente' => $activites->filter(fn($a) => $this->statutActivite($a, $enseignant->id) === 'en_attente')->count(),
+            ],
+            'recentes' => $activites->map(fn($a) => [
+                'id' => $a->id,
+                'date' => $a->date_activite,
+                'cours' => $a->attribution?->cours?->intitule_ecue ?? 'Cours',
+                'type_operation' => $a->type_operation,
+                'niveau_complexite' => $a->niveau_complexite,
+                'volume_horaire' => (float) $a->volume_horaire,
+                'statut_validation' => $this->statutActivite($a, $enseignant->id),
+            ]),
+            'par_type' => $parType,
+        ]);
+    }
+
+    private function statutActivite(ActivitePedagogique $activite, int $enseignantId): string
+    {
+        $validation = VolumeHoraire::where('enseignant_id', $enseignantId)
+            ->where('annee_id', $activite->annee_id)
+            ->with('validation')
+            ->first()
+            ?->validation;
+
+        return $validation?->statut_validation ?? 'en_attente';
     }
 }

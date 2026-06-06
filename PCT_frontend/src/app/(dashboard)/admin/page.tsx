@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { AppShell, PageHeader } from "@/components/shared/AppShell";
 import { StatCard } from "@/components/shared/StatCard";
 import { Card } from "@/components/ui/card";
@@ -11,6 +12,9 @@ import {
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { downloadExport } from "@/lib/download";
+import { getErrorMessage } from "@/lib/errors";
+import { toast } from "sonner";
 
 interface DashboardStats {
   kpis: {
@@ -48,13 +52,19 @@ export default function AdminDashboard() {
         description="Pilotage global des activités pédagogiques"
         actions={
           <>
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => downloadExport("/exports/excel", "etat_heures").catch(e => toast.error(getErrorMessage(e)))}
+            >
               <Download className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Exporter</span>
             </Button>
-            <Button className="bg-gradient-primary text-white hover:opacity-95" size="sm">
-              <span className="hidden sm:inline">Nouveau rapport</span>
-              <span className="sm:hidden">Rapport</span>
+            <Button asChild className="bg-gradient-primary text-white hover:opacity-95" size="sm">
+              <Link href="/admin/rapports">
+                <span className="hidden sm:inline">Nouveau rapport</span>
+                <span className="sm:hidden">Rapport</span>
+              </Link>
             </Button>
           </>
         }

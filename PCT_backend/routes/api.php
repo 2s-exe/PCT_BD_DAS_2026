@@ -114,9 +114,6 @@ Route::prefix('v1')->group(function () {
             // Activités — suppression
             Route::delete('activites/{activite}',          [ActiviteController::class, 'destroy']);
 
-            // Dashboard stats (admin)
-            Route::get('dashboard/stats',                  [DashboardController::class, 'stats']);
-
             // Reset password admin (sans email)
             Route::post('users/{user}/reset-password',     [PasswordResetController::class, 'adminReset']);
 
@@ -126,9 +123,21 @@ Route::prefix('v1')->group(function () {
             Route::put('parametres/{parametre}',           [ParametreController::class, 'update']);
             Route::delete('parametres/{parametre}',        [ParametreController::class, 'destroy']);
 
-            // Exports
+        });
+
+        // Dashboards
+        Route::middleware('role:admin,secretaire')->group(function () {
+            Route::get('dashboard/stats',                  [DashboardController::class, 'stats']);
+        });
+        Route::middleware('role:enseignant')->group(function () {
+            Route::get('dashboard/enseignant',             [DashboardController::class, 'enseignant']);
+        });
+
+        // Exports filtrés selon le rôle connecté
+        Route::middleware('role:admin,secretaire,enseignant')->group(function () {
             Route::get('exports/pdf',                      [ExportController::class, 'pdf']);
             Route::get('exports/excel',                    [ExportController::class, 'excel']);
+            Route::get('exports/{type}',                   [ExportController::class, 'resource']);
         });
     });
 });

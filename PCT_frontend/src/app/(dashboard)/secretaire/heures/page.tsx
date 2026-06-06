@@ -10,6 +10,9 @@ import {
 import { Download } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { downloadExport } from "@/lib/download";
+import { getErrorMessage } from "@/lib/errors";
+import { toast } from "sonner";
 import type { PaginatedResponse, VolumeHoraire } from "@/types";
 
 export default function SecretaireHeures() {
@@ -24,7 +27,10 @@ export default function SecretaireHeures() {
         title="Suivi des heures"
         description="Vue consolidée des volumes horaires par enseignant"
         actions={
-          <Button variant="outline">
+          <Button
+            variant="outline"
+            onClick={() => downloadExport("/exports/volumes", "suivi_heures_secretaire").catch(e => toast.error(getErrorMessage(e)))}
+          >
             <Download className="h-4 w-4 mr-2" />Exporter
           </Button>
         }

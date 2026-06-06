@@ -2,6 +2,7 @@
 namespace App\Notifications;
 
 use Illuminate\Notifications\Notification;
+use App\Notifications\Channels\SmsChannel;
 use Illuminate\Notifications\Messages\MailMessage;
 
 class CompteCreeNotification extends Notification
@@ -14,7 +15,7 @@ class CompteCreeNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', SmsChannel::class];
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -35,5 +36,16 @@ class CompteCreeNotification extends Notification
             ->action('Se connecter', $frontendUrl . '/login')
             ->line('Veuillez changer votre mot de passe lors de votre première connexion.')
             ->salutation('L\'équipe PCT UVCI');
+    }
+
+    public function toSms(object $notifiable): string
+    {
+        $roleLabel = match ($this->role) {
+            'admin' => 'Administrateur',
+            'secretaire' => 'Secrétaire pédagogique',
+            default => 'Enseignant',
+        };
+
+        return "Votre compte {$roleLabel} PCT UVCI a été créé. Identifiant : {$this->login}. Mot de passe temporaire : {$this->password}. Connectez-vous via : " . config('app.frontend_url', config('app.url')) . "/login";
     }
 }

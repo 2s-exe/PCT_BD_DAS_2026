@@ -18,6 +18,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errors";
+import { downloadExport } from "@/lib/download";
 import { useAuthStore } from "@/store/authStore";
 import type { PaginatedResponse, ActivitePedagogique } from "@/types";
 
@@ -74,7 +75,11 @@ export default function EnseignantHistorique() {
         title="Mes activités"
         description="Historique complet de vos déclarations pédagogiques"
         actions={
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => downloadExport("/exports/activites", "recapitulatif_enseignant").catch(e => toast.error(getErrorMessage(e)))}
+          >
             <Download className="h-4 w-4 mr-2" />
             <span className="hidden sm:inline">Télécharger récapitulatif</span>
             <span className="sm:hidden">Télécharger</span>
@@ -120,9 +125,15 @@ export default function EnseignantHistorique() {
                       {a.volume_horaire}h
                     </TableCell>
                     <TableCell>
-                      <Badge className="bg-amber-50 text-amber-700 border-0 whitespace-nowrap">
-                        En attente
-                      </Badge>
+                      {a.statut_validation === "valide" && (
+                        <Badge className="bg-green-50 text-green-700 border-0 whitespace-nowrap">Validé</Badge>
+                      )}
+                      {a.statut_validation === "rejete" && (
+                        <Badge className="bg-red-50 text-red-700 border-0 whitespace-nowrap">Rejeté</Badge>
+                      )}
+                      {(!a.statut_validation || a.statut_validation === "en_attente") && (
+                        <Badge className="bg-amber-50 text-amber-700 border-0 whitespace-nowrap">En attente</Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Button

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,16 +20,22 @@ import {
   DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   DropdownMenu, DropdownMenuContent,
   DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
   Plus, MoreHorizontal, Download, Pencil,
-  UserX, UserCheck, Filter,
+  UserX, UserCheck, Filter, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errors";
+import { downloadExport } from "@/lib/download";
 import type { Secretaire } from "@/types";
 
 // ─── Schéma de validation ─────────────────────────────────────
@@ -40,6 +46,11 @@ const secretaireSchema = z.object({
   telephone:  z.string().optional(),
   password:   z.string().min(6, "Minimum 6 caractères").optional().or(z.literal("")),
 });
+
+function generatePassword(length = 12) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%";
+  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+}
 type SecretaireFormData = z.infer<typeof secretaireSchema>;
 
 // ─── Composant principal ──────────────────────────────────────
@@ -87,6 +98,17 @@ export default function AdminSecretaires() {
     onError: (error) => toast.error(getErrorMessage(error)),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => api.delete(`/secretaires/${id}`),
+    onSuccess: () => {
+      toast.success("Secrétaire supprimée avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["secretaires"] });
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+
+  const [deleteConfirm, setDeleteConfirm] = useState<Secretaire | null>(null);
+
   const openCreate = () => {
     setEditing(null);
     setDialogOpen(true);
@@ -116,7 +138,10 @@ export default function AdminSecretaires() {
         description="Gestion des comptes du secrétariat pédagogique"
         actions={
           <>
-            <Button variant="outline">
+            <Button
+              variant="outline"
+              onClick={() => downloadExport("/exports/secretaires", "secretaires").catch(e => toast.error(getErrorMessage(e)))}
+            >
               <Download className="h-4 w-4 mr-2" />Exporter
             </Button>
             <Button
@@ -210,6 +235,13 @@ export default function AdminSecretaires() {
                             <><UserCheck className="h-4 w-4 mr-2" />Activer</>
                           )}
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => setDeleteConfirm(s)}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />Supprimer
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -226,6 +258,30 @@ export default function AdminSecretaires() {
           </Table>
         )}
       </Card>
+
+      {/* Dialog création / édition */}
+      <AlertDialog open={!!deleteConfirm} onOpenChange={v => !v && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogTitle>Supprimer la secrétaire</AlertDialogTitle>
+          <AlertDialogDescription>
+            Êtes-vous sûr de vouloir supprimer <strong>{deleteConfirm && `${deleteConfirm.prenom} ${deleteConfirm.nom}`}</strong> ? Cette action est irréversible.
+          </AlertDialogDescription>
+          <div className="flex gap-2 justify-end">
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteConfirm) {
+                  deleteMutation.mutate(deleteConfirm.id);
+                  setDeleteConfirm(null);
+                }
+              }}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Dialog création / édition */}
       <SecretaireDialog
@@ -265,6 +321,8 @@ function SecretaireDialog({
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<SecretaireFormData>({
     resolver: zodResolver(secretaireSchema),
@@ -278,6 +336,20 @@ function SecretaireDialog({
         }
       : { nom: "", prenom: "", email: "", telephone: "", password: "" },
   });
+
+  const password = watch("password");
+  const [passwordInitialized, setPasswordInitialized] = useState(false);
+
+  useEffect(() => {
+    if (open && !editing && !passwordInitialized) {
+      setValue("password", generatePassword());
+      setPasswordInitialized(true);
+    }
+
+    if (!open && passwordInitialized) {
+      setPasswordInitialized(false);
+    }
+  }, [open, editing, passwordInitialized, setValue]);
 
   const handleClose = () => { reset(); onClose(); };
 
@@ -308,7 +380,7 @@ function SecretaireDialog({
             <Label htmlFor="email">Email institutionnel</Label>
             <Input id="email" type="email" {...register("email")} placeholder="prenom.nom@uvci.edu.ci" />
             {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
-            <p className="text-xs text-muted-foreground">Cet email servira d'identifiant de connexion.</p>
+            <p className="text-xs text-muted-foreground">Cet email servira d'identifiant de connexion et de login.</p>
           </div>
 
           <div className="space-y-1.5">
@@ -323,6 +395,11 @@ function SecretaireDialog({
             </Label>
             <Input id="password" type="password" {...register("password")} placeholder="••••••••" />
             {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+            {!editing && password && (
+              <p className="text-xs text-muted-foreground">
+                Mot de passe généré : <span className="font-mono text-sm text-foreground">{password}</span>
+              </p>
+            )}
           </div>
 
           {error && (

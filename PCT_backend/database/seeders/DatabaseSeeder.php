@@ -108,33 +108,6 @@ class DatabaseSeeder extends Seeder
                 ],
                 'user' => ['login' => 'b.diallo', 'password' => 'Ens@2026'],
             ],
-            // Login : m.soro | Mot de passe : Ens@2026
-            [
-                'enseignant' => [
-                    'nom' => 'Soro', 'prenom' => 'Mariame', 'email' => 'm.soro@uvci.edu.ci',
-                    'grade' => 'Assistant', 'statut' => 'Vacataire', 'taux_horaire' => 3500,
-                    'departement' => 'Gestion',
-                ],
-                'user' => ['login' => 'm.soro', 'password' => 'Ens@2026'],
-            ],
-            // Login : j.kouame | Mot de passe : Ens@2026
-            [
-                'enseignant' => [
-                    'nom' => 'Kouamé', 'prenom' => 'Jean-Pierre', 'email' => 'j.kouame@uvci.edu.ci',
-                    'grade' => 'Maitre-Assistant', 'statut' => 'Permanent', 'taux_horaire' => 6000,
-                    'departement' => 'Informatique',
-                ],
-                'user' => ['login' => 'j.kouame', 'password' => 'Ens@2026'],
-            ],
-            // Login : s.bamba | Mot de passe : Ens@2026
-            [
-                'enseignant' => [
-                    'nom' => 'Bamba', 'prenom' => 'Seydou', 'email' => 's.bamba@uvci.edu.ci',
-                    'grade' => 'Professeur', 'statut' => 'Permanent', 'taux_horaire' => 9000,
-                    'departement' => 'Sciences Économiques',
-                ],
-                'user' => ['login' => 's.bamba', 'password' => 'Ens@2026'],
-            ],
         ];
 
         foreach ($enseignants as $item) {

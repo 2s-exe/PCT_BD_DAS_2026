@@ -1,11 +1,13 @@
 <?php
 namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
+use App\Mail\AccountCreatedMail;
 use App\Models\Secretaire;
 use App\Models\User;
-use App\Notifications\CompteCreeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
 
 class SecretaireController extends Controller
@@ -19,10 +21,10 @@ class SecretaireController extends Controller
     }
 
     #[OA\Post(path:"/secretaires",tags:["Secrétaires"],summary:"Créer une secrétaire",security:[["sanctum" => []]],
-        requestBody:new OA\RequestBody(required:true,content:new OA\JsonContent(required:["nom","prenom","email","login","password"],properties:[
+        requestBody:new OA\RequestBody(required:true,content:new OA\JsonContent(required:["nom","prenom","email","password"],properties:[
             new OA\Property(property:"nom",type:"string"),new OA\Property(property:"prenom",type:"string"),
             new OA\Property(property:"email",type:"string",format:"email"),new OA\Property(property:"telephone",type:"string"),
-            new OA\Property(property:"login",type:"string"),new OA\Property(property:"password",type:"string",format:"password"),
+            new OA\Property(property:"password",type:"string",format:"password"),
         ])),
         responses:[new OA\Response(response:201,description:"Créée")]
     )]
@@ -30,24 +32,25 @@ class SecretaireController extends Controller
         $data = $request->validate([
             'nom'       => 'required',
             'prenom'    => 'required',
-            'email'     => 'required|email|unique:secretaires|unique:users,email',
+            'email'     => 'required|email|ends_with:@uvci.edu.ci|unique:secretaires|unique:users,email|unique:users,login',
             'telephone' => 'nullable',
-            'password'  => 'required|min:6',
+            'password'  => 'nullable|min:6',
         ]);
         $s = Secretaire::create($data);
+        $password = $data['password'] ?? Str::random(12);
         $user = User::create([
             'name'         => "{$s->prenom} {$s->nom}",
             'login'        => $s->email,
             'email'        => $s->email,
-            'password'     => Hash::make($data['password']),
+            'password'     => Hash::make($password),
             'role'         => 'secretaire',
             'secretaire_id'=> $s->id,
             'actif'        => true,
         ]);
 
-        // Notification email de création de compte
+        // Envoi de l'email de création de compte
         try {
-            $user->notify(new CompteCreeNotification($s->email, $data['password'], 'secretaire'));
+            Mail::to($user->email)->send(new AccountCreatedMail($s->email, $password, 'secretaire', $user->name));
         } catch (\Exception) { /* ne pas bloquer si le mail échoue */ }
 
         return response()->json(array_merge($s->toArray(), ['login' => $s->email]), 201);
@@ -58,7 +61,11 @@ class SecretaireController extends Controller
 
     #[OA\Put(path:"/secretaires/{id}",tags:["Secrétaires"],summary:"Modifier",security:[["sanctum" => []]],parameters:[new OA\Parameter(name:"id",in:"path",required:true,schema:new OA\Schema(type:"integer"))],requestBody:new OA\RequestBody(required:true,content:new OA\JsonContent(properties:[new OA\Property(property:"nom",type:"string")])),responses:[new OA\Response(response:200,description:"Modifié")])]
     public function update(Request $request, Secretaire $secretaire) {
-        $data = $request->validate(['nom'=>'sometimes','prenom'=>'sometimes','email'=>'sometimes|email|unique:secretaires,email,'.$secretaire->id,'telephone'=>'nullable','login'=>'nullable','password'=>'nullable|min:6']);
+        $data = $request->validate([
+            'nom'=>'sometimes','prenom'=>'sometimes',
+            'email'=>'sometimes|email|ends_with:@uvci.edu.ci|unique:secretaires,email,'.$secretaire->id,
+            'telephone'=>'nullable','login'=>'nullable','password'=>'nullable|min:6'
+        ]);
         $secretaire->update($data);
         $user = User::where('secretaire_id',$secretaire->id)->first();
         if ($user) {

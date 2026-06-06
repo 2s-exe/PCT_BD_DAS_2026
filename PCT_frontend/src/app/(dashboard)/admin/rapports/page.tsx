@@ -4,53 +4,42 @@ import { AppShell, PageHeader } from "@/components/shared/AppShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, FileSpreadsheet, Download, Users, Loader2 } from "lucide-react";
-import api from "@/lib/api";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/errors";
+import { downloadExport } from "@/lib/download";
 
 const RAPPORTS = [
   {
-    t: "État global des heures (PDF)",
-    d: "Tous les enseignants, toutes les heures de l'année en cours.",
+    t: "État global des heures (CSV)",
+    d: "Tous les enseignants, volumes prévus, réalisés et statut de validation.",
     icon: FileText,
     fn: "/exports/pdf",
-    ext: "csv",
     filename: "etat_heures",
   },
   {
-    t: "État global des heures (Excel)",
-    d: "Fichier CSV complet pour le service comptabilité.",
+    t: "Volumes horaires (CSV)",
+    d: "Vue complète des volumes par enseignant et année académique.",
     icon: FileSpreadsheet,
-    fn: "/exports/excel",
-    ext: "csv",
-    filename: "etat_heures_excel",
+    fn: "/exports/volumes",
+    filename: "volumes_horaires",
   },
   {
-    t: "Fiches individuelles (ZIP PDF)",
-    d: "Une fiche par enseignant avec le détail des activités.",
+    t: "Activités déclarées (CSV)",
+    d: "Toutes les activités pédagogiques avec cours, volumes et observations.",
     icon: Users,
-    fn: "/exports/pdf",
-    ext: "csv",
-    filename: "fiches_individuelles",
+    fn: "/exports/activites",
+    filename: "activites_declarees",
   },
 ];
 
 export default function AdminRapports() {
   const [loading, setLoading] = useState<string | null>(null);
 
-  const download = async (endpoint: string, filename: string, ext: string) => {
+  const download = async (endpoint: string, filename: string) => {
     if (loading) return;
     setLoading(filename);
     try {
-      const res = await api.get(endpoint, { responseType: "blob" });
-      const url = URL.createObjectURL(res.data as Blob);
-      const a   = document.createElement("a");
-      a.href     = url;
-      a.download = `${filename}.${ext}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      await downloadExport(endpoint, filename);
       toast.success("Téléchargement démarré !");
     } catch (error) {
       toast.error(getErrorMessage(error));
@@ -78,10 +67,10 @@ export default function AdminRapports() {
                 variant="outline"
                 className="mt-auto w-full"
                 disabled={!!loading}
-                onClick={() => download(r.fn, r.filename, r.ext)}
+                onClick={() => download(r.fn, r.filename)}
               >
                 {isLoading
-                  ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Génération…</>
+                  ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Génération...</>
                   : <><Download className="h-4 w-4 mr-2" />Télécharger</>}
               </Button>
             </Card>

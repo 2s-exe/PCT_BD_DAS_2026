@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ActivitePedagogique;
 use App\Models\ParametreCalcul;
+use App\Models\VolumeHoraire;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -17,7 +18,20 @@ class ActiviteController extends Controller
         } elseif ($id = $request->id_enseignant) {
             $q->whereHas('attribution', fn($w) => $w->where('enseignant_id', $id));
         }
-        return $q->latest()->paginate(50);
+        $page = $q->latest()->paginate(50);
+        $page->getCollection()->transform(function ($activite) {
+            $enseignantId = $activite->attribution?->enseignant_id;
+            $validation = $enseignantId
+                ? VolumeHoraire::where('enseignant_id', $enseignantId)
+                    ->where('annee_id', $activite->annee_id)
+                    ->with('validation')
+                    ->first()
+                    ?->validation
+                : null;
+            $activite->setAttribute('statut_validation', $validation?->statut_validation ?? 'en_attente');
+            return $activite;
+        });
+        return $page;
     }
 
     #[OA\Post(path:"/activites",tags:["Activités"],summary:"Déclarer une activité (calcul VHN automatique)",security:[["sanctum" => []]],

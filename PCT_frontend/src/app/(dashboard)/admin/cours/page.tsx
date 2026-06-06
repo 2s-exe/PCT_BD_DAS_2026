@@ -30,6 +30,7 @@ import { Plus, MoreHorizontal, Pencil, Trash2, Download } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errors";
+import { downloadExport } from "@/lib/download";
 import { DeleteConfirmDialog } from "@/components/shared/DeleteConfirmDialog";
 import type { PaginatedResponse, Cours } from "@/types";
 
@@ -115,7 +116,12 @@ export default function AdminCours() {
         description="Catalogue des enseignements"
         actions={
           <>
-            <Button variant="outline" size="sm" className="hidden sm:flex">
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden sm:flex"
+              onClick={() => downloadExport("/exports/cours", "cours").catch(e => toast.error(getErrorMessage(e)))}
+            >
               <Download className="h-4 w-4 mr-2" />Exporter
             </Button>
             <Button

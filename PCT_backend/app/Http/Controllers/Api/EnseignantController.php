@@ -1,12 +1,14 @@
 <?php
 namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
+use App\Mail\AccountCreatedMail;
 use App\Models\Enseignant;
 use App\Models\User;
-use App\Notifications\CompteCreeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
 
 class EnseignantController extends Controller
@@ -47,7 +49,7 @@ class EnseignantController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'nom'=>'required','prenom'=>'required','email'=>'required|email|unique:enseignants',
+            'nom'=>'required','prenom'=>'required','email'=>'required|email|ends_with:@uvci.edu.ci|unique:enseignants|unique:users,email|unique:users,login',
             'telephone'=>'nullable','grade'=>'required|in:Assistant,Maitre-Assistant,Professeur',
             'statut'=>'required|in:Permanent,Vacataire','taux_horaire'=>'required|numeric|min:0',
             'departement_id'=>'nullable|exists:departements,id',
@@ -56,14 +58,14 @@ class EnseignantController extends Controller
 
         $enseignant = Enseignant::create($data);
 
-        // Le login = email institutionnel de l'enseignant
+        // Le login est toujours l'email institutionnel de l'enseignant
         $login = $enseignant->email;
 
-        // Mot de passe par défaut : Pct@{année courante}
-        $password = !empty($data['password']) ? $data['password'] : 'Pct@' . date('Y');
+        // Mot de passe généré automatiquement si non précisé
+        $password = !empty($data['password']) ? $data['password'] : Str::random(12);
         $passwordGenerated = empty($data['password']);
 
-        User::create([
+        $createdUser = User::create([
             'name'          => "{$enseignant->prenom} {$enseignant->nom}",
             'login'         => $login,
             'email'         => $enseignant->email,
@@ -73,13 +75,10 @@ class EnseignantController extends Controller
             'actif'         => true,
         ]);
 
-        // Notification email de création de compte
-        $createdUser = User::where('enseignant_id', $enseignant->id)->first();
-        if ($createdUser) {
-            try {
-                $createdUser->notify(new CompteCreeNotification($login, $password, 'enseignant'));
-            } catch (\Exception) { /* ne pas bloquer si le mail échoue */ }
-        }
+        // Envoi de l'email de création de compte
+        try {
+            Mail::to($createdUser->email)->send(new AccountCreatedMail($login, $password, 'enseignant', $createdUser->name));
+        } catch (\Exception) { /* ne pas bloquer si le mail échoue */ }
 
         return response()->json(
             array_merge($enseignant->load('departement')->toArray(), [
@@ -107,7 +106,7 @@ class EnseignantController extends Controller
     {
         $data = $request->validate([
             'nom'=>'sometimes|required','prenom'=>'sometimes|required',
-            'email'=>'sometimes|required|email|unique:enseignants,email,'.$enseignant->id,
+            'email'=>'sometimes|required|email|ends_with:@uvci.edu.ci|unique:enseignants,email,'.$enseignant->id,
             'telephone'=>'nullable','grade'=>'sometimes|in:Assistant,Maitre-Assistant,Professeur',
             'statut'=>'sometimes|in:Permanent,Vacataire','taux_horaire'=>'sometimes|numeric|min:0',
             'departement_id'=>'nullable|exists:departements,id','login'=>'nullable|string','password'=>'nullable|min:6',
@@ -156,7 +155,7 @@ class EnseignantController extends Controller
             $v = Validator::make($data, [
                 'nom'          => 'required|string',
                 'prenom'       => 'required|string',
-                'email'        => 'required|email|unique:enseignants',
+                'email'        => 'required|email|ends_with:@uvci.edu.ci|unique:enseignants|unique:users,email|unique:users,login',
                 'grade'        => 'required|in:Assistant,Maitre-Assistant,Professeur',
                 'statut'       => 'required|in:Permanent,Vacataire',
                 'taux_horaire' => 'required|numeric|min:0',
@@ -191,7 +190,7 @@ class EnseignantController extends Controller
             ]);
 
             try {
-                $user->notify(new CompteCreeNotification($enseignant->email, $password, 'enseignant'));
+                Mail::to($user->email)->send(new AccountCreatedMail($enseignant->email, $password, 'enseignant', $user->name));
             } catch (\Exception) {}
 
             $imported[] = $enseignant->nom_complet;

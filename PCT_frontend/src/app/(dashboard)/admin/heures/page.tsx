@@ -11,6 +11,9 @@ import {
 import { Clock, CheckCircle2, AlertTriangle, Download } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { downloadExport } from "@/lib/download";
+import { getErrorMessage } from "@/lib/errors";
+import { toast } from "sonner";
 import type { PaginatedResponse, VolumeHoraire } from "@/types";
 
 export default function AdminHeures() {
@@ -25,7 +28,10 @@ export default function AdminHeures() {
         title="Suivi des heures"
         description="Volumes horaires réalisés et validation par enseignant"
         actions={
-          <Button variant="outline">
+          <Button
+            variant="outline"
+            onClick={() => downloadExport("/exports/volumes", "volumes_horaires").catch(e => toast.error(getErrorMessage(e)))}
+          >
             <Download className="h-4 w-4 mr-2" />
             <span className="hidden sm:inline">Exporter Excel</span>
             <span className="sm:hidden">Exporter</span>

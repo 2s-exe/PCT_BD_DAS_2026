@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,6 +20,10 @@ import {
   DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -29,19 +33,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Plus, Filter, MoreHorizontal, Download,
-  Pencil, UserX, UserCheck,
+  Pencil, UserX, UserCheck, Trash2,
 } from "lucide-react";
 import { ImportCsvButton } from "@/components/shared/ImportCsvButton";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errors";
+import { downloadExport } from "@/lib/download";
 import type { PaginatedResponse, Enseignant, Departement } from "@/types";
 
 // ─── Schéma ────────────────────────────────────────────────────
 const enseignantSchema = z.object({
   nom:               z.string().min(2, "Minimum 2 caractères"),
   prenom:            z.string().min(2, "Minimum 2 caractères"),
-  email:             z.string().email("Email invalide"),
+  email:             z.string().email("Email invalide").refine(v => v.endsWith("@uvci.edu.ci"), "Doit être une adresse @uvci.edu.ci"),
   telephone:         z.string().optional(),
   grade:             z.enum(["Assistant", "Maitre-Assistant", "Professeur"]),
   statut:            z.enum(["Permanent", "Vacataire"]),
@@ -51,6 +56,11 @@ const enseignantSchema = z.object({
   password:          z.string().min(6, "Minimum 6 caractères").optional().or(z.literal("")),
 });
 type FormData = z.infer<typeof enseignantSchema>;
+
+function generatePassword(length = 12) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$%";
+  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+}
 
 // ─── Page principale ───────────────────────────────────────────
 export default function AdminEnseignants() {
@@ -100,6 +110,17 @@ export default function AdminEnseignants() {
     onError: (error) => toast.error(getErrorMessage(error)),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => api.delete(`/enseignants/${id}`),
+    onSuccess: () => {
+      toast.success("Enseignant supprimé avec succès.");
+      queryClient.invalidateQueries({ queryKey: ["enseignants"] });
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+
+  const [deleteConfirm, setDeleteConfirm] = useState<Enseignant | null>(null);
+
   const closeDialog = () => { setDialogOpen(false); setEditing(null); };
 
   const rows = (data?.data ?? []).filter(t => {
@@ -120,7 +141,12 @@ export default function AdminEnseignants() {
         description="Gestion centralisée des profils et taux horaires"
         actions={
           <>
-            <Button variant="outline" size="sm" className="hidden sm:flex">
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden sm:flex"
+              onClick={() => downloadExport("/exports/enseignants", "enseignants").catch(e => toast.error(getErrorMessage(e)))}
+            >
               <Download className="h-4 w-4 mr-2" />Exporter
             </Button>
             <ImportCsvButton
@@ -221,6 +247,13 @@ export default function AdminEnseignants() {
                               ? <><UserX className="h-4 w-4 mr-2" />Désactiver</>
                               : <><UserCheck className="h-4 w-4 mr-2" />Activer</>}
                           </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => setDeleteConfirm(t)}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />Supprimer
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -255,6 +288,29 @@ export default function AdminEnseignants() {
             : null
         }
       />
+
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(v: boolean) => !v && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogTitle>Supprimer l'enseignant</AlertDialogTitle>
+          <AlertDialogDescription>
+            Êtes-vous sûr de vouloir supprimer <strong>{deleteConfirm?.nom_complet}</strong> ? Cette action est irréversible.
+          </AlertDialogDescription>
+          <div className="flex gap-2 justify-end">
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteConfirm) {
+                  deleteMutation.mutate(deleteConfirm.id);
+                  setDeleteConfirm(null);
+                }
+              }}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppShell>
   );
 }
@@ -271,28 +327,55 @@ function EnseignantDialog({
   isLoading: boolean;
   error: string | null;
 }) {
-  const { register, handleSubmit, control, reset, formState: { errors } } = useForm<FormData>({
+  const defaultValues = useMemo<FormData>(() => editing
+    ? {
+        nom:            editing.nom,
+        prenom:         editing.prenom,
+        email:          editing.email,
+        telephone:      editing.telephone ?? "",
+        grade:          editing.grade as FormData["grade"],
+        statut:         editing.statut as FormData["statut"],
+        taux_horaire:   editing.taux_horaire,
+        departement_id: String(editing.departement?.id ?? ""),
+        login:          "",
+        password:       "",
+      }
+    : {
+        nom: "", prenom: "", email: "", telephone: "",
+        grade: "Assistant", statut: "Permanent",
+        taux_horaire: 0, departement_id: "",
+        login: "", password: "",
+      }, [editing]);
+
+  const { register, handleSubmit, control, reset, watch, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(enseignantSchema),
-    values: editing
-      ? {
-          nom:            editing.nom,
-          prenom:         editing.prenom,
-          email:          editing.email,
-          telephone:      editing.telephone ?? "",
-          grade:          editing.grade,
-          statut:         editing.statut,
-          taux_horaire:   editing.taux_horaire,
-          departement_id: String(editing.departement?.id ?? ""),
-          login:          "",
-          password:       "",
-        }
-      : {
-          nom: "", prenom: "", email: "", telephone: "",
-          grade: "Assistant", statut: "Permanent",
-          taux_horaire: 0, departement_id: "",
-          login: "", password: "",
-        },
+    defaultValues,
   });
+
+  const email = watch("email");
+  const password = watch("password");
+  const [passwordInitialized, setPasswordInitialized] = useState(false);
+
+  useEffect(() => {
+    reset(defaultValues);
+  }, [defaultValues, reset]);
+
+  useEffect(() => {
+    if (!editing) {
+      setValue("login", email ?? "");
+    }
+  }, [email, editing, setValue]);
+
+  useEffect(() => {
+    if (open && !editing && !passwordInitialized) {
+      setValue("password", generatePassword());
+      setPasswordInitialized(true);
+    }
+
+    if (!open && passwordInitialized) {
+      setPasswordInitialized(false);
+    }
+  }, [open, editing, passwordInitialized, setValue]);
 
   const handleClose = () => { reset(); onClose(); };
 
@@ -397,14 +480,29 @@ function EnseignantDialog({
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="login">Login {!editing && "*"}</Label>
-                <Input id="login" {...register("login")} placeholder="k.nguessan" />
+                <Label htmlFor="login">
+                  Login
+                  {!editing && <span className="ml-2 text-xs text-muted-foreground normal-case"></span>}
+                </Label>
+                <Input id="login" {...register("login")} placeholder="Sera défini sur l'email" readOnly={!editing} />
                 {errors.login && <p className="text-xs text-destructive">{errors.login.message}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="password">Mot de passe {!editing && "*"}</Label>
+                <Label htmlFor="password">
+                  Mot de passe
+                  {!editing ? (
+                    <span className="ml-2 text-xs text-muted-foreground normal-case"></span>
+                  ) : (
+                    <span className="ml-2 text-xs text-muted-foreground normal-case">laisser vide = inchangé</span>
+                  )}
+                </Label>
                 <Input id="password" type="password" {...register("password")} placeholder="••••••••" />
                 {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+                {!editing && password && (
+                  <p className="text-xs text-muted-foreground">
+                    Mot de passe généré : <span className="font-mono text-sm text-foreground">{password}</span>
+                  </p>
+                )}
               </div>
             </div>
           </div>
