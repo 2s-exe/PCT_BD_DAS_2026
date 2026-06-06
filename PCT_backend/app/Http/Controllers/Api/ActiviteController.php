@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ActivitePedagogique;
+use App\Models\Attribution;
 use App\Models\ParametreCalcul;
 use App\Models\VolumeHoraire;
 use Illuminate\Http\Request;
@@ -20,15 +21,8 @@ class ActiviteController extends Controller
         }
         $page = $q->latest()->paginate(50);
         $page->getCollection()->transform(function ($activite) {
-            $enseignantId = $activite->attribution?->enseignant_id;
-            $validation = $enseignantId
-                ? VolumeHoraire::where('enseignant_id', $enseignantId)
-                    ->where('annee_id', $activite->annee_id)
-                    ->with('validation')
-                    ->first()
-                    ?->validation
-                : null;
-            $activite->setAttribute('statut_validation', $validation?->statut_validation ?? 'en_attente');
+            // Expose le champ statut sous le nom statut_validation attendu par le frontend
+            $activite->setAttribute('statut_validation', $activite->statut ?? 'en_attente');
             return $activite;
         });
         return $page;
@@ -53,6 +47,7 @@ class ActiviteController extends Controller
         }
         $volume = $p->coefficient_vhn;
         $activite = ActivitePedagogique::create(['type_operation'=>$data['type_operation'],'niveau_complexite'=>$data['niveau_complexite'],'date_activite'=>$data['date_activite'],'volume_horaire'=>$volume,'observations'=>$data['observations']??null,'attribution_id'=>$data['id_attribution'],'annee_id'=>$data['id_annee']]);
+        $this->syncVolume($data['id_attribution'], $data['id_annee']);
         return response()->json($activite->load(['attribution.enseignant','attribution.cours','annee']),201);
     }
 
@@ -109,6 +104,20 @@ class ActiviteController extends Controller
         }
 
         $activite->update(array_merge($data, ['volume_horaire' => $p->coefficient_vhn]));
+        $this->syncVolume($activite->attribution_id, $activite->annee_id);
+
+        return response()->json($activite->load(['attribution.enseignant', 'attribution.cours', 'annee']));
+    }
+
+    public function validerStatut(Request $request, ActivitePedagogique $activite): \Illuminate\Http\JsonResponse
+    {
+        $data = $request->validate([
+            'statut'                  => 'required|in:en_attente,valide,rejete',
+            'observations_secretaire' => 'nullable|string|max:1000',
+        ]);
+
+        $activite->update($data);
+        $this->syncVolume($activite->attribution_id, $activite->annee_id);
 
         return response()->json($activite->load(['attribution.enseignant', 'attribution.cours', 'annee']));
     }
@@ -117,5 +126,37 @@ class ActiviteController extends Controller
     public function show(ActivitePedagogique $activite) { return $activite->load(['attribution.enseignant','attribution.cours','annee']); }
 
     #[OA\Delete(path:"/activites/{id}",tags:["Activités"],summary:"Supprimer",security:[["sanctum" => []]],parameters:[new OA\Parameter(name:"id",in:"path",required:true,schema:new OA\Schema(type:"integer"))],responses:[new OA\Response(response:204,description:"Supprimé")])]
-    public function destroy(ActivitePedagogique $activite) { $activite->delete(); return response()->json(null,204); }
+    public function destroy(ActivitePedagogique $activite)
+    {
+        [$attribId, $anneeId] = [$activite->attribution_id, $activite->annee_id];
+        $activite->delete();
+        $this->syncVolume($attribId, $anneeId);
+        return response()->json(null, 204);
+    }
+
+    private function syncVolume(int $attributionId, int $anneeId): void
+    {
+        $attribution = Attribution::find($attributionId);
+        if (!$attribution) return;
+
+        $enseignantId = $attribution->enseignant_id;
+
+        // Somme des VHN non rejetés pour cet enseignant / cette année
+        $heuresRealisees = ActivitePedagogique::whereHas(
+            'attribution', fn($q) => $q->where('enseignant_id', $enseignantId)
+        )->where('annee_id', $anneeId)->where('statut', '!=', 'rejete')->sum('volume_horaire');
+
+        // Charge prévue = somme des charges de toutes ses attributions sur cette année
+        $heuresPrevues = Attribution::where('enseignant_id', $enseignantId)
+            ->where('annee_id', $anneeId)
+            ->sum('charge_horaire');
+
+        VolumeHoraire::updateOrCreate(
+            ['enseignant_id' => $enseignantId, 'annee_id' => $anneeId],
+            [
+                'heures_realisees' => $heuresRealisees,
+                'heures_prevues'   => $heuresPrevues,
+            ]
+        );
+    }
 }

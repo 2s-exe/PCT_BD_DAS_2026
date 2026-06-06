@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ParametreCalcul;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -20,8 +21,23 @@ class ParametreController extends Controller
         responses:[new OA\Response(response:201,description:"Créé")]
     )]
     public function store(Request $request) {
-        $p = ParametreCalcul::create($request->validate(['type_operation'=>'required|in:creation,mise_a_jour','niveau_complexite'=>'required|in:simple,intermediaire,complexe','coefficient_vhn'=>'required|numeric|min:0','description'=>'nullable']));
-        return response()->json($p,201);
+        $data = $request->validate([
+            'type_operation'    => 'required|in:creation,mise_a_jour',
+            'niveau_complexite' => 'required|in:simple,intermediaire,complexe',
+            'coefficient_vhn'   => 'required|numeric|min:0',
+            'description'       => 'nullable',
+        ]);
+        try {
+            $p = ParametreCalcul::create($data);
+        } catch (QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return response()->json([
+                    'message' => 'Un paramètre pour ce type d\'opération et ce niveau de complexité existe déjà. Modifiez-le plutôt que d\'en créer un nouveau.',
+                ], 422);
+            }
+            throw $e;
+        }
+        return response()->json($p, 201);
     }
 
     #[OA\Put(path:"/parametres/{id}",tags:["Paramètres"],summary:"Modifier",security:[["sanctum" => []]],parameters:[new OA\Parameter(name:"id",in:"path",required:true,schema:new OA\Schema(type:"integer"))],requestBody:new OA\RequestBody(required:true,content:new OA\JsonContent(properties:[new OA\Property(property:"coefficient_vhn",type:"number")])),responses:[new OA\Response(response:200,description:"Modifié")])]

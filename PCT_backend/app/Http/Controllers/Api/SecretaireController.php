@@ -76,7 +76,14 @@ class SecretaireController extends Controller
     }
 
     #[OA\Delete(path:"/secretaires/{id}",tags:["Secrétaires"],summary:"Supprimer",security:[["sanctum" => []]],parameters:[new OA\Parameter(name:"id",in:"path",required:true,schema:new OA\Schema(type:"integer"))],responses:[new OA\Response(response:204,description:"Supprimé")])]
-    public function destroy(Secretaire $secretaire) { $secretaire->delete(); return response()->json(null,204); }
+    public function destroy(Secretaire $secretaire)
+    {
+        $user = User::where('secretaire_id', $secretaire->id)->first();
+        $user?->tokens()->delete();
+        $user?->delete();
+        $secretaire->delete();
+        return response()->json(null, 204);
+    }
 
     #[OA\Patch(path:"/secretaires/{id}",tags:["Secrétaires"],summary:"Activer/désactiver",security:[["sanctum" => []]],parameters:[new OA\Parameter(name:"id",in:"path",required:true,schema:new OA\Schema(type:"integer"))],requestBody:new OA\RequestBody(required:true,content:new OA\JsonContent(properties:[new OA\Property(property:"actif",type:"boolean")])),responses:[new OA\Response(response:200,description:"Statut mis à jour")])]
     public function patch(Request $request, Secretaire $secretaire) {

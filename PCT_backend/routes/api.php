@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\ParametreController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExportController;
 use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\Api\NotificationController;
 
 Route::prefix('v1')->group(function () {
 
@@ -25,8 +26,10 @@ Route::prefix('v1')->group(function () {
     // ── Authentifié ───────────────────────────────────────────────────────────
     Route::middleware('auth:sanctum')->group(function () {
 
-        Route::post('/logout', [AuthController::class, 'logout']);
-        Route::get('/me',     [AuthController::class, 'me']);
+        Route::post('/logout',           [AuthController::class, 'logout']);
+        Route::get('/me',               [AuthController::class, 'me']);
+        Route::post('/change-password', [AuthController::class, 'changePassword']);
+        Route::get('/notifications',    [NotificationController::class, 'index']);
 
         // Années — lecture : tous les rôles (nécessaire pour les formulaires)
         Route::get('annees',               [AnneeController::class, 'index']);
@@ -64,10 +67,11 @@ Route::prefix('v1')->group(function () {
             Route::get('enseignants/{enseignant}',         [EnseignantController::class, 'show']);
         });
 
-        // Volumes — lecture + validation : admin + secrétaire
+        // Volumes + activités — lecture + validation : admin + secrétaire
         Route::middleware('role:admin,secretaire')->group(function () {
             Route::get('volumes',                          [VolumeController::class, 'index']);
             Route::post('volumes/{volume}/valider',        [VolumeController::class, 'valider']);
+            Route::post('activites/{activite}/statut',     [ActiviteController::class, 'validerStatut']);
         });
 
         // ── Admin uniquement ─────────────────────────────────────────────────

@@ -126,7 +126,14 @@ class EnseignantController extends Controller
         parameters:[new OA\Parameter(name:"id",in:"path",required:true,schema:new OA\Schema(type:"integer"))],
         responses:[new OA\Response(response:204,description:"Supprimé")]
     )]
-    public function destroy(Enseignant $enseignant) { $enseignant->delete(); return response()->json(null,204); }
+    public function destroy(Enseignant $enseignant)
+    {
+        // Supprimer le compte utilisateur associé avant l'enseignant
+        $enseignant->user?->tokens()->delete();
+        $enseignant->user?->delete();
+        $enseignant->delete();
+        return response()->json(null, 204);
+    }
 
     #[OA\Post(path:"/enseignants/import",tags:["Enseignants"],summary:"Importer des enseignants depuis un fichier CSV",
         security:[["sanctum" => []]],

@@ -80,6 +80,7 @@ export interface ActivitePedagogique {
   volume_horaire: number;
   observations?: string;
   statut_validation?: "en_attente" | "valide" | "rejete";
+  observations_secretaire?: string;
   attribution: Attribution;
   annee: AnneeAcademique;
 }

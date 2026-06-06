@@ -6,8 +6,8 @@ import { useState } from "react";
 import {
   LayoutDashboard, Users, BookOpen, ClipboardList, Clock,
   FileBarChart, Settings, CheckSquare,
-  PlusCircle, Bell, Search, LogOut, UserCog, Menu,
-  Building2, Link2, CalendarRange,
+  PlusCircle, Search, LogOut, UserCog, Menu,
+  Building2, Link2, CalendarRange, KeyRound,
   type LucideIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -15,7 +15,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
+import { ChangePasswordDialog } from "@/components/shared/ChangePasswordDialog";
+import { NotificationBell } from "@/components/shared/NotificationBell";
 import type { Role } from "@/types";
 
 const NAV: Record<Role, { href: string; label: string; icon: LucideIcon }[]> = {
@@ -98,6 +104,7 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
   const pathname  = usePathname();
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [pwDialog, setPwDialog] = useState(false);
 
   // Guard: if authenticated user's role doesn't match the shell's expected role,
   // render nothing — middleware + AuthGuard should already prevent this path.
@@ -116,7 +123,13 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
       <aside className="hidden md:flex w-64 flex-col bg-sidebar text-sidebar-foreground shrink-0 sticky top-0 h-screen overflow-y-auto">
         <SidebarHeader role={role} />
         <NavLinks role={role} pathname={pathname} />
-        <div className="p-4 border-t border-sidebar-border shrink-0">
+        <div className="p-4 border-t border-sidebar-border shrink-0 space-y-2">
+          <button
+            onClick={() => setPwDialog(true)}
+            className="flex items-center gap-2 text-xs text-sidebar-foreground/70 hover:text-white w-full"
+          >
+            <KeyRound className="h-3.5 w-3.5" /> Modifier mon mot de passe
+          </button>
           <button
             onClick={logout}
             className="flex items-center gap-2 text-xs text-sidebar-foreground/70 hover:text-white w-full"
@@ -132,7 +145,13 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
           <SheetTitle className="sr-only">Menu de navigation</SheetTitle>
           <SidebarHeader role={role} />
           <NavLinks role={role} pathname={pathname} onNavigate={() => setMobileOpen(false)} />
-          <div className="p-4 border-t border-sidebar-border">
+          <div className="p-4 border-t border-sidebar-border space-y-2">
+            <button
+              onClick={() => { setMobileOpen(false); setPwDialog(true); }}
+              className="flex items-center gap-2 text-xs text-sidebar-foreground/70 hover:text-white w-full"
+            >
+              <KeyRound className="h-3.5 w-3.5" /> Modifier mon mot de passe
+            </button>
             <button
               onClick={() => { setMobileOpen(false); logout(); }}
               className="flex items-center gap-2 text-xs text-sidebar-foreground/70 hover:text-white w-full"
@@ -165,26 +184,40 @@ export function AppShell({ role, children }: { role: Role; children: ReactNode }
           </div>
 
           <div className="flex items-center gap-2 ml-auto">
-            <Button variant="ghost" size="icon" className="relative shrink-0">
-              <Bell className="h-4 w-4" />
-              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-destructive" />
-            </Button>
-            <div className="hidden sm:flex items-center gap-3 pl-3 border-l">
-              <div className="text-right leading-tight">
-                <div className="text-sm font-medium truncate max-w-[120px]">{displayName}</div>
-                <div className="text-[11px] text-muted-foreground">{ROLE_LABEL[role]}</div>
-              </div>
-              <Avatar className="h-9 w-9 shrink-0">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-            </div>
+            <NotificationBell />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="hidden sm:flex items-center gap-3 pl-3 border-l hover:opacity-80 transition-opacity outline-none">
+                  <div className="text-right leading-tight">
+                    <div className="text-sm font-medium truncate max-w-[120px]">{displayName}</div>
+                    <div className="text-[11px] text-muted-foreground">{ROLE_LABEL[role]}</div>
+                  </div>
+                  <Avatar className="h-9 w-9 shrink-0">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => setPwDialog(true)}>
+                  <KeyRound className="h-4 w-4 mr-2" />
+                  Modifier mon mot de passe
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Déconnexion
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
         <main className="flex-1 p-4 md:p-8 overflow-x-hidden">{children}</main>
       </div>
+
+      <ChangePasswordDialog open={pwDialog} onClose={() => setPwDialog(false)} />
     </div>
   );
 }

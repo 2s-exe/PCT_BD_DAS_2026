@@ -1,4 +1,4 @@
-<?php
+docker exec -it pct-backend sh<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
