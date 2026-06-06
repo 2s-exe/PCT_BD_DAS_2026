@@ -22,7 +22,10 @@ class AccountCreatedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            from: env('MAIL_FROM_ADDRESS', 'noreply@uvci.edu.ci'),
+            from: new \Illuminate\Mail\Mailables\Address(
+                config('mail.from.address', 'admin@uvci.edu.ci'),
+                config('mail.from.name', 'PCT UVCI'),
+            ),
             subject: 'Votre compte PCT UVCI a été créé',
         );
     }

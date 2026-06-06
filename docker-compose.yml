@@ -42,11 +42,13 @@ services:
       LOG_CHANNEL: stderr
       LOG_LEVEL: error
       MAIL_MAILER: ${MAIL_MAILER:-log}
-      MAIL_HOST: ${MAIL_HOST:-127.0.0.1}
-      MAIL_PORT: ${MAIL_PORT:-2525}
-      MAIL_USERNAME: ${MAIL_USERNAME:-null}
-      MAIL_PASSWORD: ${MAIL_PASSWORD:-null}
-      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-pct@uvci.edu.ci}
+      MAIL_SCHEME: ${MAIL_SCHEME:-tls}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-admin@uvci.edu.ci}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-PCT UVCI}
       FRONTEND_URL: http://localhost:3000
     depends_on:
       db:
