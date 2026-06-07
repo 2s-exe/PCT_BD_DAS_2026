@@ -3,9 +3,13 @@
 *.md
 .env
 .env.*
+!.env.example
+*.sql
+*.dump
+test
 PCT_frontend/.next
 PCT_frontend/node_modules
-PCT_frontend/.env*.local
+PCT_frontend/.env*
 PCT_backend/vendor
 PCT_backend/node_modules
 PCT_backend/.env
