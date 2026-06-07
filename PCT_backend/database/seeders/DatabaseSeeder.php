@@ -97,7 +97,7 @@ class DatabaseSeeder extends Seeder
                     'grade' => 'Maitre-Assistant', 'statut' => 'Permanent', 'taux_horaire' => 5000,
                     'departement' => 'Informatique',
                 ],
-                'user' => ['login' => 'k.nguessan', 'password' => 'Ens@2026'],
+                'user' => ['login' => 'k.nguessan@uvci.edu.ci', 'password' => 'Ens@2026'],
             ],
             // Login : b.diallo | Mot de passe : Ens@2026
             [
@@ -106,7 +106,7 @@ class DatabaseSeeder extends Seeder
                     'grade' => 'Professeur', 'statut' => 'Permanent', 'taux_horaire' => 8000,
                     'departement' => 'Mathématiques',
                 ],
-                'user' => ['login' => 'b.diallo', 'password' => 'Ens@2026'],
+                'user' => ['login' => 'b.diallo@uvci.edu.ci', 'password' => 'Ens@2026'],
             ],
         ];
 
