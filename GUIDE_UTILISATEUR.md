@@ -1,5 +1,5 @@
-# Guide Utilisateur — PCT UVCI
-## Plateforme de Calcul des Totaux — Université Virtuelle de Côte d'Ivoire
+# Guide Utilisateur - PCT UVCI
+## Plateforme de Calcul des Totaux - Université Virtuelle de Côte d'Ivoire
 
 ---
 
@@ -272,7 +272,7 @@ Pour chaque activité, trois actions sont possibles :
 
 **Accès** : Menu latéral → *Enseignants*
 
-La secrétaire peut **consulter** les profils enseignants et leurs activités (lecture seule — pas de modification).
+La secrétaire peut **consulter** les profils enseignants et leurs activités (lecture seule - pas de modification).
 
 ### 4.4 Suivi des heures
 

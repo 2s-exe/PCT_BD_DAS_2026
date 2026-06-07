@@ -1,4 +1,4 @@
-# Présentation du Projet — PCT UVCI
+# Présentation du Projet - PCT UVCI
 ## Plateforme de Calcul des Totaux des Volumes Horaires
 ### Université Virtuelle de Côte d'Ivoire
 
@@ -139,22 +139,22 @@ PCT UVCI repose sur une **architecture 3-tiers** containerisée :
 
 | Fonctionnalité | Admin | Secrétaire | Enseignant |
 |----------------|:-----:|:----------:|:----------:|
-| Créer un enseignant | ✅ | — | — |
-| Créer une secrétaire | ✅ | — | — |
-| Désactiver un compte | ✅ | — | — |
-| Réinitialiser un mot de passe | ✅ | — | — |
+| Créer un enseignant | ✅ | - | - |
+| Créer une secrétaire | ✅ | - | - |
+| Désactiver un compte | ✅ | - | - |
+| Réinitialiser un mot de passe | ✅ | - | - |
 | Modifier son propre mot de passe | ✅ | ✅ | ✅ |
 
 ### 4.2 Gestion pédagogique
 
 | Fonctionnalité | Admin | Secrétaire | Enseignant |
 |----------------|:-----:|:----------:|:----------:|
-| Configurer les paramètres VHN | ✅ | — | — |
-| Créer des cours/filières | ✅ | — | — |
-| Attribuer un cours à un enseignant | ✅ | — | — |
-| Déclarer une activité pédagogique | ✅ | — | ✅ |
-| Modifier une activité (si non validée) | ✅ | — | ✅ |
-| Valider / Rejeter une activité | ✅ | ✅ | — |
+| Configurer les paramètres VHN | ✅ | - | - |
+| Créer des cours/filières | ✅ | - | - |
+| Attribuer un cours à un enseignant | ✅ | - | - |
+| Déclarer une activité pédagogique | ✅ | - | ✅ |
+| Modifier une activité (si non validée) | ✅ | - | ✅ |
+| Valider / Rejeter une activité | ✅ | ✅ | - |
 | Consulter son historique | ✅ | ✅ | ✅ |
 
 ### 4.3 Pilotage et reporting
@@ -162,7 +162,7 @@ PCT UVCI repose sur une **architecture 3-tiers** containerisée :
 | Fonctionnalité | Admin | Secrétaire | Enseignant |
 |----------------|:-----:|:----------:|:----------:|
 | Tableau de bord avec KPIs | ✅ | ✅ | ✅ |
-| Graphique par département | ✅ | — | — |
+| Graphique par département | ✅ | - | - |
 | Suivi des volumes horaires | ✅ | ✅ | ✅ (personnel) |
 | Export PDF | ✅ | ✅ | ✅ (personnel) |
 | Export Excel | ✅ | ✅ | ✅ (personnel) |
@@ -247,21 +247,21 @@ Les notifications sont **mises à jour automatiquement toutes les 60 secondes** 
 
 ## 8. Points forts de la solution
 
-✅ **Calcul automatique du VHN** — zéro risque d'erreur de calcul manuelle
+✅ **Calcul automatique du VHN** - zéro risque d'erreur de calcul manuelle
 
-✅ **Circuit de validation numérisé** — traçabilité complète de chaque décision
+✅ **Circuit de validation numérisé** - traçabilité complète de chaque décision
 
-✅ **Interface responsive** — utilisable sur ordinateur, tablette et mobile
+✅ **Interface responsive** - utilisable sur ordinateur, tablette et mobile
 
-✅ **Notifications en temps réel** — les acteurs sont alertés sans délai
+✅ **Notifications en temps réel** - les acteurs sont alertés sans délai
 
-✅ **Export multi-format** — PDF pour les instances officielles, Excel pour l'analyse
+✅ **Export multi-format** - PDF pour les instances officielles, Excel pour l'analyse
 
-✅ **Sécurité renforcée** — RBAC strict, tokens invalidables, mots de passe hachés
+✅ **Sécurité renforcée** - RBAC strict, tokens invalidables, mots de passe hachés
 
-✅ **Architecture containerisée** — déploiement simple et reproductible avec Docker
+✅ **Architecture containerisée** - déploiement simple et reproductible avec Docker
 
-✅ **Email institutionnel obligatoire** — maîtrise des accès aux adresses `@uvci.edu.ci`
+✅ **Email institutionnel obligatoire** - maîtrise des accès aux adresses `@uvci.edu.ci`
 
 ---
 

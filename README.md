@@ -1,4 +1,4 @@
-# PCT UVCI — Plateforme de Calcul des Totaux
+# PCT UVCI - Plateforme de Calcul des Totaux
 
 > Système de gestion numérique des activités pédagogiques et des volumes horaires des enseignants de l'Université Virtuelle de Côte d'Ivoire.
 
@@ -13,7 +13,7 @@
 ## Table des matières
 
 1. [Présentation](#1-présentation)
-2. [Démarrage rapide — Docker](#2-démarrage-rapide--docker)
+2. [Démarrage rapide - Docker](#2-démarrage-rapide--docker)
 3. [Installation manuelle](#3-installation-manuelle)
 4. [Architecture](#4-architecture)
 5. [Variables d'environnement](#5-variables-denvironnement)
@@ -60,7 +60,7 @@ Admin      → Consulte les états consolidés et exporte les rapports
 
 ---
 
-## 2. Démarrage rapide — Docker
+## 2. Démarrage rapide - Docker
 
 ### Prérequis
 
@@ -71,14 +71,14 @@ Admin      → Consulte les états consolidés et exporte les rapports
 
 ### Étapes
 
-**1 — Cloner le dépôt**
+**1 - Cloner le dépôt**
 
 ```bash
 git clone https://github.com/yassoungo1coulibaly-hue/PCT_BD_DAS_2026.git
 cd PCT_BD_DAS_2026
 ```
 
-**2 — Créer le fichier d'environnement**
+**2 - Créer le fichier d'environnement**
 
 ```bash
 # Linux / Mac
@@ -88,7 +88,7 @@ cp .env.example .env
 Copy-Item .env.example .env
 ```
 
-**3 — Générer APP_KEY et remplir `.env`**
+**3 - Générer APP_KEY et remplir `.env`**
 
 ```bash
 # Générer la clé (fonctionne sur toutes les plateformes via Docker)
@@ -99,7 +99,7 @@ Coller la valeur dans `.env` à la ligne `APP_KEY=`.
 
 > Les autres variables (`DB_DATABASE`, `DB_PASSWORD`, etc.) ont déjà des valeurs par défaut dans `.env.example` adaptées au développement local.
 
-**4 — Démarrer tous les services**
+**4 - Démarrer tous les services**
 
 ```bash
 docker compose up --build -d
@@ -107,7 +107,7 @@ docker compose up --build -d
 
 Le premier démarrage prend 2 à 5 minutes (téléchargement des images + build).
 
-**5 — Vérifier l'état**
+**5 - Vérifier l'état**
 
 ```bash
 docker compose ps
@@ -195,7 +195,7 @@ Accéder : **http://localhost:3000**
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│  Navigateur — http://localhost:8000                              │
+│  Navigateur - http://localhost:8000                              │
 └────────────────────────┬─────────────────────────────────────────┘
                          │ HTTP
                 ┌────────▼─────────┐
@@ -265,10 +265,10 @@ cp .env.example .env   # puis éditer .env
 | `DB_USERNAME` | ✅ | `pct_user` | Utilisateur MySQL |
 | `DB_PASSWORD` | ✅ | `pct_password` | Mot de passe MySQL |
 | `DB_ROOT_PASSWORD` | ✅ | `root_secret` | Mot de passe root MySQL |
-| `MAIL_MAILER` | — | `log` | `log` = emails dans logs Docker, `smtp` = envoi réel |
-| `MAIL_HOST` | — | `smtp.gmail.com` | Serveur SMTP |
-| `MAIL_USERNAME` | — | *(vide)* | Adresse email expéditeur |
-| `MAIL_PASSWORD` | — | *(vide)* | App Password Gmail |
+| `MAIL_MAILER` | - | `log` | `log` = emails dans logs Docker, `smtp` = envoi réel |
+| `MAIL_HOST` | - | `smtp.gmail.com` | Serveur SMTP |
+| `MAIL_USERNAME` | - | *(vide)* | Adresse email expéditeur |
+| `MAIL_PASSWORD` | - | *(vide)* | App Password Gmail |
 
 ### Configurer les emails (optionnel)
 
@@ -313,7 +313,7 @@ docker compose restart backend
 # Arrêter (conserve les volumes et données)
 docker compose down
 
-# Reset complet — SUPPRIME toutes les données
+# Reset complet - SUPPRIME toutes les données
 docker compose down -v
 ```
 
@@ -323,7 +323,7 @@ docker compose down -v
 # Shell dans le conteneur
 docker exec -it pct-backend sh
 
-# Tinker — REPL interactif Laravel
+# Tinker - REPL interactif Laravel
 docker exec -it pct-backend php artisan tinker
 
 # Appliquer les migrations
@@ -363,7 +363,7 @@ docker restart pct-frontend
 ### Base de données
 
 ```bash
-# Sauvegarde — le fichier .sql est ignoré par Git
+# Sauvegarde - le fichier .sql est ignoré par Git
 docker exec pct-db mysqldump `
   -u root -p"${DB_ROOT_PASSWORD:-root_secret}" `
   --no-tablespaces --single-transaction pct_db `
@@ -441,7 +441,7 @@ Après chaque `git pull`, vérifier ces points avant de tester :
 
 | Branche | Rôle | Protection |
 |---------|------|-----------|
-| `main` | Code de production — stable | Protégée — PR obligatoire |
+| `main` | Code de production - stable | Protégée - PR obligatoire |
 | `fullstack` | Branche d'intégration principale | Revue recommandée |
 | `feature/xxx` | Nouvelle fonctionnalité | Libre |
 | `fix/xxx` | Correction de bug | Libre |
@@ -461,7 +461,7 @@ git add PCT_backend/app/Http/...
 git add PCT_frontend/src/...
 git commit -m "feat: décrire ce qui a changé"
 
-# 4. Avant de proposer une PR — synchroniser avec fullstack
+# 4. Avant de proposer une PR - synchroniser avec fullstack
 git fetch origin
 git rebase origin/fullstack
 
@@ -478,7 +478,7 @@ fix:      Correction de bug
 refactor: Réécriture de code sans changement de comportement
 docs:     Documentation uniquement
 style:    Formatage (pas de changement logique)
-chore:    Maintenance — dépendances, config, CI
+chore:    Maintenance - dépendances, config, CI
 test:     Ajout ou modification de tests
 ```
 
@@ -537,4 +537,4 @@ docker exec pct-backend php artisan optimize:clear
 
 ---
 
-*PCT UVCI — Université Virtuelle de Côte d'Ivoire — 2026*
+*PCT UVCI - Université Virtuelle de Côte d'Ivoire - 2026*

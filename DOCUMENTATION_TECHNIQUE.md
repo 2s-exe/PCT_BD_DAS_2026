@@ -1,5 +1,5 @@
-# Documentation Technique — PCT UVCI
-## Plateforme de Calcul des Totaux — Université Virtuelle de Côte d'Ivoire
+# Documentation Technique - PCT UVCI
+## Plateforme de Calcul des Totaux - Université Virtuelle de Côte d'Ivoire
 
 ---
 
@@ -105,11 +105,11 @@ UTILISATEUR ──(authentifie)──── SECRETAIRE  (0,1)
 
 | Association | Cardinalité | Signification |
 |-------------|-------------|---------------|
-| ENSEIGNANT — DEPARTEMENT | (1,1) — (0,n) | Un enseignant appartient à un seul département ; un département peut avoir plusieurs enseignants |
-| ENSEIGNANT — ATTRIBUTION | (0,n) — (1,1) | Un enseignant peut avoir plusieurs attributions ; une attribution appartient à un seul enseignant |
-| ATTRIBUTION — ACTIVITE | (0,n) — (1,1) | Une attribution peut générer plusieurs activités |
-| ENSEIGNANT — VOLUME_HORAIRE | (0,n) — (1,1) | Un enseignant a un volume horaire par année académique |
-| VOLUME_HORAIRE — VALIDATION | (0,1) — (1,1) | Un volume peut être validé une seule fois |
+| ENSEIGNANT - DEPARTEMENT | (1,1) - (0,n) | Un enseignant appartient à un seul département ; un département peut avoir plusieurs enseignants |
+| ENSEIGNANT - ATTRIBUTION | (0,n) - (1,1) | Un enseignant peut avoir plusieurs attributions ; une attribution appartient à un seul enseignant |
+| ATTRIBUTION - ACTIVITE | (0,n) - (1,1) | Une attribution peut générer plusieurs activités |
+| ENSEIGNANT - VOLUME_HORAIRE | (0,n) - (1,1) | Un enseignant a un volume horaire par année académique |
+| VOLUME_HORAIRE - VALIDATION | (0,1) - (1,1) | Un volume peut être validé une seule fois |
 
 ---
 
@@ -216,7 +216,7 @@ parametres_calcul (#id, type_operation, niveau_complexite, coefficient_vhn, desc
 | heures_prevues | DECIMAL(8,2) | DEFAULT 0 |
 | heures_realisees | DECIMAL(8,2) | DEFAULT 0 |
 | heures_complementaires | DECIMAL(8,2) | DEFAULT 0 |
-| — | UNIQUE | (enseignant_id, annee_id) |
+| - | UNIQUE | (enseignant_id, annee_id) |
 
 #### Table `parametres_calcul`
 
@@ -227,7 +227,7 @@ parametres_calcul (#id, type_operation, niveau_complexite, coefficient_vhn, desc
 | niveau_complexite | ENUM('simple','intermediaire','complexe') | NOT NULL |
 | coefficient_vhn | DECIMAL(5,2) | NOT NULL |
 | description | TEXT | NULL |
-| — | UNIQUE | (type_operation, niveau_complexite) |
+| - | UNIQUE | (type_operation, niveau_complexite) |
 
 ---
 
@@ -369,16 +369,16 @@ Résultats :
 | Couche | Technologie | Version |
 |--------|-------------|---------|
 | Frontend | Next.js | 15.x |
-| UI Components | Shadcn/UI + Tailwind CSS | — |
-| State management | Zustand + TanStack React Query | — |
-| Validation client | Zod + React Hook Form | — |
+| UI Components | Shadcn/UI + Tailwind CSS | - |
+| State management | Zustand + TanStack React Query | - |
+| Validation client | Zod + React Hook Form | - |
 | Backend | Laravel | 12.x |
 | Langage backend | PHP | 8.4 |
-| Authentification | Laravel Sanctum (Bearer token) | — |
+| Authentification | Laravel Sanctum (Bearer token) | - |
 | Base de données | MySQL | 8.0 |
 | Reverse proxy | Nginx | Alpine |
-| Containerisation | Docker + Docker Compose | — |
-| Mailing | SMTP Gmail (Laravel Mail) | — |
+| Containerisation | Docker + Docker Compose | - |
+| Mailing | SMTP Gmail (Laravel Mail) | - |
 
 ---
 

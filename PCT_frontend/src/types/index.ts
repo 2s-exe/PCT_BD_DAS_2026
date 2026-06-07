@@ -1,5 +1,5 @@
 // ============================================================
-// Types TypeScript — PCT UVCI
+// Types TypeScript - PCT UVCI
 // ============================================================
 
 export type Role = "admin" | "secretaire" | "enseignant";
