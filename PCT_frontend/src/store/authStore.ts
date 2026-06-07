@@ -18,11 +18,15 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       setAuth: (user, token) => {
         localStorage.setItem("pct_token", token);
+        // Sync a cookie so Next.js middleware (Edge runtime) can read auth state
+        const cookieVal = encodeURIComponent(JSON.stringify({ state: { user, token } }));
+        document.cookie = `pct_user=${cookieVal};path=/;max-age=${7 * 24 * 3600};SameSite=Lax`;
         set({ user, token });
       },
       clearAuth: () => {
         localStorage.removeItem("pct_token");
         localStorage.removeItem("pct_user");
+        document.cookie = "pct_user=;path=/;max-age=0;SameSite=Lax";
         set({ user: null, token: null });
       },
       isAuthenticated: () => !!get().token,

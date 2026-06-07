@@ -82,4 +82,45 @@ class AuthController extends Controller
         }
         return response()->json($data);
     }
+
+    #[OA\Post(
+        path: "/change-password", tags: ["Auth"], summary: "Modifier son mot de passe",
+        security: [["sanctum" => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["current_password","new_password","new_password_confirmation"],
+                properties: [
+                    new OA\Property(property: "current_password",          type: "string"),
+                    new OA\Property(property: "new_password",              type: "string", minLength: 6),
+                    new OA\Property(property: "new_password_confirmation", type: "string"),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: "Mot de passe modifié"),
+            new OA\Response(response: 422, description: "Mot de passe actuel incorrect ou validation échouée"),
+        ]
+    )]
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password'          => 'required|string',
+            'new_password'              => 'required|string|min:6|confirmed',
+            'new_password_confirmation' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'Le mot de passe actuel est incorrect.',
+                'errors'  => ['current_password' => ['Le mot de passe actuel est incorrect.']],
+            ], 422);
+        }
+
+        $user->update(['password' => Hash::make($request->new_password)]);
+
+        return response()->json(['message' => 'Mot de passe modifié avec succès.']);
+    }
 }

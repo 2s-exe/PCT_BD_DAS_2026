@@ -10,7 +10,12 @@ class AttributionController extends Controller
     #[OA\Get(path:"/attributions",tags:["Attributions"],summary:"Liste des attributions",security:[["sanctum" => []]],parameters:[new OA\Parameter(name:"id_enseignant",in:"query",required:false,schema:new OA\Schema(type:"integer"))],responses:[new OA\Response(response:200,description:"Liste")])]
     public function index(Request $request) {
         $q = Attribution::with(['enseignant','cours','annee']);
-        if ($id = $request->id_enseignant) $q->where('enseignant_id',$id);
+        $user = $request->user();
+        if ($user->role === 'enseignant') {
+            $q->where('enseignant_id', $user->enseignant?->id);
+        } elseif ($id = $request->id_enseignant) {
+            $q->where('enseignant_id', $id);
+        }
         return $q->paginate(50);
     }
 

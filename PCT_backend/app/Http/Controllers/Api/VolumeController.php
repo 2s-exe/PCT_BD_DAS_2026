@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\VolumeHoraire;
 use App\Models\Validation;
+use App\Notifications\VolumeValideNotification;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
@@ -27,6 +28,9 @@ class VolumeController extends Controller
         responses:[new OA\Response(response:200,description:"Volume validé/rejeté")]
     )]
     public function valider(Request $request, VolumeHoraire $volume) {
+        if (!in_array($request->user()->role, ['secretaire', 'admin'])) {
+            return response()->json(['message' => 'Non autorisé.'], 403);
+        }
         $data = $request->validate(['statut_validation'=>'required|in:valide,rejete','observations'=>'nullable']);
         $validation = $volume->validation;
         if ($validation) {
@@ -34,6 +38,16 @@ class VolumeController extends Controller
         } else {
             Validation::create(['volume_id'=>$volume->id,'statut_validation'=>$data['statut_validation'],'observations'=>$data['observations']??null,'date_validation'=>now()]);
         }
-        return $volume->load(['enseignant','annee','validation']);
+        $volume->load(['enseignant.user', 'annee', 'validation']);
+
+        // Notifier l'enseignant par email
+        $userEnseignant = $volume->enseignant?->user;
+        if ($userEnseignant) {
+            try {
+                $userEnseignant->notify(new VolumeValideNotification($volume));
+            } catch (\Exception) { /* ne pas bloquer si le mail échoue */ }
+        }
+
+        return $volume;
     }
 }

@@ -1,29 +1,54 @@
-# Frontend (géré sur la branche PCT_frontend)
-PCT_frontend/
-
-# Fichiers système
+# ── Système d'exploitation ────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Éditeurs
+# ── Éditeurs ──────────────────────────────────────────────────────────────────
 .vscode/
 .idea/
+.zed/
 
-# Laravel — dossiers générés
-PctBackend/vendor/
-PctBackend/node_modules/
-PctBackend/.env
-PctBackend/.env.backup
-PctBackend/.env.production
-PctBackend/storage/logs/
-PctBackend/storage/framework/cache/
-PctBackend/storage/framework/sessions/
-PctBackend/storage/framework/views/
-PctBackend/bootstrap/cache/
-PctBackend/public/hot
-PctBackend/public/storage
-PctBackend/database/*.sqlite
-PctBackend/database/*.sqlite-shm
-PctBackend/database/*.sqlite-wal
-PctBackend/.phpunit.result.cache
-PctBackend/.phpunit.cache/
+# ── Variables d'environnement (JAMAIS commiter le .env réel) ──────────────────
+.env
+.env.*
+!.env.example
+
+# ── Sauvegardes de base de données ────────────────────────────────────────────
+*.sql
+*.sql.gz
+*.dump
+
+# ── Fichiers temporaires / tests ──────────────────────────────────────────────
+test
+*.tmp
+*.log
+
+# ── Backend Laravel (PCT_backend/) ────────────────────────────────────────────
+PCT_backend/vendor/
+PCT_backend/node_modules/
+PCT_backend/.env
+PCT_backend/.env.backup
+PCT_backend/.env.production
+PCT_backend/storage/logs/
+PCT_backend/storage/framework/cache/
+PCT_backend/storage/framework/sessions/
+PCT_backend/storage/framework/views/
+PCT_backend/bootstrap/cache/
+PCT_backend/public/hot
+PCT_backend/public/storage
+PCT_backend/public/build/
+PCT_backend/database/*.sqlite
+PCT_backend/database/*.sqlite-shm
+PCT_backend/database/*.sqlite-wal
+PCT_backend/.phpunit.result.cache
+PCT_backend/.phpunit.cache/
+
+# ── Frontend Next.js (PCT_frontend/) ──────────────────────────────────────────
+PCT_frontend/node_modules/
+PCT_frontend/.next/
+PCT_frontend/out/
+PCT_frontend/dist/
+PCT_frontend/.env.local
+PCT_frontend/.env.production
+PCT_frontend/.env.development.local
+PCT_frontend/.env.test.local

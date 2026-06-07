@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import api from "@/lib/api";
 import type { AuthResponse } from "@/types";
+import type { AxiosError } from "axios";
 
 export function useAuth() {
   const router = useRouter();
@@ -22,7 +23,15 @@ export function useAuth() {
   };
 
   const logout = async () => {
-    try { await api.post("/logout"); } catch {}
+    try {
+      await api.post("/logout");
+    } catch (err) {
+      // Toléré : l'expiration du token côté serveur provoque un 401
+      const axiosErr = err as AxiosError;
+      if (axiosErr?.response?.status !== 401) {
+        console.warn("Logout API error:", axiosErr?.message);
+      }
+    }
     clearAuth();
     router.push("/login");
   };

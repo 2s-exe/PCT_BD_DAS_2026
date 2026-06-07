@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Enseignant;
+use App\Models\Secretaire;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -31,5 +33,10 @@ class User extends Authenticatable
     public function secretaire()
     {
         return $this->belongsTo(Secretaire::class);
+    }
+
+    public function routeNotificationForSms(): ?string
+    {
+        return $this->secretaire?->telephone ?? $this->enseignant?->telephone;
     }
 }

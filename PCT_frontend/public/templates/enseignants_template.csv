@@ -1,0 +1,4 @@
+nom,prenom,email,telephone,grade,statut,taux_horaire,departement_id
+N'Guessan,Kouassi,k.nguessan@uvci.edu.ci,+225 0700000001,Maitre-Assistant,Permanent,5000,1
+Diallo,Boubacar,b.diallo@uvci.edu.ci,,Professeur,Permanent,7000,2
+Soro,Mariame,m.soro@uvci.edu.ci,,Assistant,Vacataire,3000,3

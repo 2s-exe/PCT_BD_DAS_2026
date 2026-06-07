@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-// @ts-expect-error CSS imports are handled by Next.js
 import "./globals.css";
 import { Providers } from "./providers";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "PCT UVCI — Gestion des heures d'enseignement",
+  title: "PCT UVCI Gestion des heures d'enseignement",
   description: "Plateforme de gestion des activités pédagogiques et volumes horaires — Université Virtuelle de Côte d'Ivoire",
 };
 

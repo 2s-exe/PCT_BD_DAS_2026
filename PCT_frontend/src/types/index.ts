@@ -1,5 +1,5 @@
 // ============================================================
-// Types TypeScript — PCT UVCI
+// Types TypeScript - PCT UVCI
 // ============================================================
 
 export type Role = "admin" | "secretaire" | "enseignant";
@@ -79,6 +79,8 @@ export interface ActivitePedagogique {
   date_activite: string;
   volume_horaire: number;
   observations?: string;
+  statut_validation?: "en_attente" | "valide" | "rejete";
+  observations_secretaire?: string;
   attribution: Attribution;
   annee: AnneeAcademique;
 }
@@ -98,6 +100,18 @@ export interface Validation {
   statut_validation: "en_attente" | "valide" | "rejete";
   date_validation?: string;
   observations?: string;
+}
+
+export interface Secretaire {
+  id: number;
+  nom: string;
+  prenom: string;
+  nom_complet: string;
+  email: string;
+  telephone?: string;
+  login: string;
+  actif: boolean;
+  created_at: string;
 }
 
 export interface Utilisateur {

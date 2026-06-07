@@ -12,9 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->statefulApi();
+        // Pas de statefulApi() : on utilise uniquement Bearer tokens (pas de sessions/cookies CSRF)
         $middleware->api(prepend: [
             \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+        $middleware->alias([
+            'role' => \App\Http\Middleware\CheckRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
