@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EnseignantController;
@@ -15,6 +16,24 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ExportController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\NotificationController;
+
+Route::get('/health', function () {
+    try {
+        DB::connection()->getPdo();
+        $dbStatus = 'ok';
+    } catch (\Exception $e) {
+        $dbStatus = 'error: ' . $e->getMessage();
+    }
+
+    $status = $dbStatus === 'ok' ? 'ok' : 'degraded';
+
+    return response()->json([
+        'status'      => $status,
+        'database'    => $dbStatus,
+        'environment' => app()->environment(),
+        'timestamp'   => now()->toISOString(),
+    ], $status === 'ok' ? 200 : 503);
+});
 
 Route::prefix('v1')->group(function () {
 
