@@ -22,9 +22,7 @@ WORKDIR /var/www
 COPY . .
 COPY --from=vendor /app/vendor ./vendor
 
-RUN mkdir -p /var/www/storage/certs
-COPY storage/certs/ca.pem /var/www/storage/certs/ca.pem
-RUN chmod 644 /var/www/storage/certs/ca.pem
+RUN mkdir -p /var/www/storage/certs && chmod 755 /var/www/storage/certs
 
 RUN mkdir -p /var/www/bootstrap/cache /var/www/storage/logs \
     /var/www/storage/framework/cache \
