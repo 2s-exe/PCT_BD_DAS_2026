@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ActivitePedagogique;
 use App\Models\AnneeAcademique;
+use App\Models\Cours;
 use App\Models\Departement;
 use App\Models\Enseignant;
 use App\Models\VolumeHoraire;
@@ -34,7 +35,9 @@ class DashboardController extends Controller
                 DB::raw('COALESCE(SUM(volumes_horaires.heures_realisees), 0) as h')
             )
             ->orderByDesc('h')
-            ->get();
+            ->get()
+            ->map(fn($row) => ['name' => $row->name, 'h' => (float) $row->h])
+            ->values();
 
         // ── Évolution mensuelle sur 12 mois (LineChart) ───────────────────────
         $evolutionMensuelle = ActivitePedagogique::select(
@@ -141,6 +144,19 @@ class DashboardController extends Controller
                 'statut_validation' => $a->statut ?? 'en_attente',
             ]),
             'par_type' => $parType,
+        ]);
+    }
+
+    public function publicStats()
+    {
+        return response()->json([
+            'enseignants'  => Enseignant::where('actif', true)->count(),
+            'cours'        => Cours::count(),
+            'heures_total' => (float) VolumeHoraire::sum('heures_realisees'),
+            'heures_validees' => (float) VolumeHoraire::whereHas(
+                'validation', fn($q) => $q->where('statut_validation', 'valide')
+            )->sum('heures_realisees'),
+            'volumes_en_attente' => VolumeHoraire::whereDoesntHave('validation')->count(),
         ]);
     }
 }

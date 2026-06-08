@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\NotificationController;
 Route::prefix('v1')->group(function () {
 
     // ── Public ────────────────────────────────────────────────────────────────
+    Route::get('/public-stats',     [DashboardController::class,  'publicStats']);
     Route::post('/login',           [AuthController::class,       'login']);
     Route::post('/forgot-password', [PasswordResetController::class, 'forgot']);
     Route::post('/reset-password',  [PasswordResetController::class, 'reset']);

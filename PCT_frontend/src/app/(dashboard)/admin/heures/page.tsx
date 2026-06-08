@@ -16,11 +16,21 @@ import { getErrorMessage } from "@/lib/errors";
 import { toast } from "sonner";
 import type { PaginatedResponse, VolumeHoraire } from "@/types";
 
+function fmt(n: number) {
+  return n >= 1000 ? `${(n / 1000).toFixed(1)} k` : n.toFixed(2).replace(/\.00$/, "");
+}
+
 export default function AdminHeures() {
   const { data, isLoading } = useQuery({
     queryKey: ["volumes"],
-    queryFn: () => api.get<PaginatedResponse<VolumeHoraire>>("/volumes").then(r => r.data),
+    queryFn: () => api.get<PaginatedResponse<VolumeHoraire>>("/volumes?per_page=1000").then(r => r.data),
   });
+
+  const rows = data?.data ?? [];
+  const totalRealise = rows.reduce((s, v) => s + (v.heures_realisees ?? 0), 0);
+  const totalValide  = rows.filter(v => v.validation?.statut_validation === "valide")
+                           .reduce((s, v) => s + (v.heures_realisees ?? 0), 0);
+  const totalCompl   = rows.reduce((s, v) => s + (v.heures_complementaires ?? 0), 0);
 
   return (
     <AppShell role="admin">
@@ -40,9 +50,9 @@ export default function AdminHeures() {
       />
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-3 mb-6">
-        <StatCard label="Total réalisé"   value="84 560 h" icon={Clock}         tone="primary" />
-        <StatCard label="Validé"          value="72 120 h" icon={CheckCircle2}  tone="success" />
-        <StatCard label="Complémentaires" value="12 440 h" icon={AlertTriangle} tone="warning" />
+        <StatCard label="Total réalisé"   value={isLoading ? "…" : `${fmt(totalRealise)} h`} icon={Clock}         tone="primary" />
+        <StatCard label="Validé"          value={isLoading ? "…" : `${fmt(totalValide)} h`}  icon={CheckCircle2}  tone="success" />
+        <StatCard label="Complémentaires" value={isLoading ? "…" : `${fmt(totalCompl)} h`}   icon={AlertTriangle} tone="warning" />
       </div>
 
       <Card className="shadow-soft overflow-hidden">

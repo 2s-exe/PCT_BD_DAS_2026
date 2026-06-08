@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,23 @@ const NAV_LINKS = [
   { label: "Rôles",           href: "#roles" },
 ];
 
+const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
+
+function fmt(n: number) {
+  if (n >= 1000) return `${Math.round(n / 100) / 10} k`;
+  return String(n);
+}
+
+interface PublicStats { enseignants: number; cours: number; heures_total: number; heures_validees: number; volumes_en_attente: number; }
+
 export default function Landing() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [stats, setStats] = useState<PublicStats | null>(null);
+
+  useEffect(() => {
+    fetch(`${API}/api/v1/public-stats`, { headers: { Accept: "application/json" } })
+      .then(r => r.json()).then(setStats).catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -124,9 +139,9 @@ export default function Landing() {
             </div>
             <div className="mt-8 grid grid-cols-3 gap-4 max-w-sm sm:max-w-lg">
               {[
-                { v: "1 248",     l: "Enseignants" },
-                { v: "342",       l: "Cours actifs" },
-                { v: "84 560 h",  l: "Heures gérées" },
+                { v: stats ? fmt(stats.enseignants)  : "…", l: "Enseignants" },
+                { v: stats ? fmt(stats.cours)        : "…", l: "Cours actifs" },
+                { v: stats ? `${fmt(stats.heures_total)} h` : "…", l: "Heures gérées" },
               ].map((s) => (
                 <div key={s.l}>
                   <div className="font-display text-xl sm:text-2xl md:text-3xl font-semibold text-primary-deep">{s.v}</div>
@@ -152,9 +167,9 @@ export default function Landing() {
               <div className="p-4 sm:p-5 space-y-3 sm:space-y-4 bg-background">
                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
                   {[
-                    { v: "1 248",    l: "Enseignants", c: "bg-primary-soft text-primary" },
-                    { v: "12 480 h", l: "Validées",    c: "bg-green-50 text-green-700" },
-                    { v: "1 840 h",  l: "En attente",  c: "bg-amber-50 text-amber-700" },
+                    { v: stats ? fmt(stats.enseignants)           : "…", l: "Enseignants", c: "bg-primary-soft text-primary" },
+                    { v: stats ? `${fmt(stats.heures_validees)} h`: "…", l: "Validées",    c: "bg-green-50 text-green-700" },
+                    { v: stats ? String(stats.volumes_en_attente) : "…", l: "En attente",  c: "bg-amber-50 text-amber-700" },
                   ].map((k) => (
                     <div key={k.l} className={`rounded-lg p-2 sm:p-3 ${k.c}`}>
                       <div className="text-[9px] sm:text-[10px] uppercase tracking-wide opacity-80">{k.l}</div>
