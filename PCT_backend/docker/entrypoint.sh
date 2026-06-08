@@ -19,12 +19,6 @@ echo "[entrypoint] Running migrations..."
 php artisan migrate --force
 echo "[entrypoint] Migrations OK."
 
-# Publier les migrations spatie/activitylog si nécessaire
-php artisan vendor:publish \
-  --provider="Spatie\Activitylog\ActivitylogServiceProvider" \
-  --tag="activitylog-migrations" \
-  --no-interaction 2>/dev/null || true
-
 # Créer le compte admin initial si la table users est vide
 php artisan db:seed --class=DatabaseSeeder --force 2>/dev/null || true
 
