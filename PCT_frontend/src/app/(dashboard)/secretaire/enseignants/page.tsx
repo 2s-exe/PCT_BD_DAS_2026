@@ -118,7 +118,7 @@ export default function SecretaireEnseignants() {
 
       {/* Fiche détail enseignant */}
       <Dialog open={!!selected} onOpenChange={v => { if (!v) setSelected(null); }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>Fiche enseignant</DialogTitle>
           </DialogHeader>

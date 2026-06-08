@@ -86,7 +86,7 @@ export function ImportCsvButton({
 
       {/* Résultat import */}
       <Dialog open={!!result} onOpenChange={(o) => !o && setResult(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>Résultat de l'import</DialogTitle>
           </DialogHeader>

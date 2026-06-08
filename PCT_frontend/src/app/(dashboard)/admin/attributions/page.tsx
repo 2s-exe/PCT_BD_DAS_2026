@@ -266,7 +266,7 @@ function AttributionDialog({ open, onClose, editing, enseignants, cours, annees,
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) handleClose(); }}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>{editing ? "Modifier l'attribution" : "Nouvelle attribution"}</DialogTitle>
         </DialogHeader>
