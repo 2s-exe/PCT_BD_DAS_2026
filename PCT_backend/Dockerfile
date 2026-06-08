@@ -26,15 +26,16 @@ COPY storage/certs/ca.pem /var/www/storage/certs/ca.pem
 RUN chmod 644 /var/www/storage/certs/ca.pem
 
 RUN mkdir -p /var/www/bootstrap/cache /var/www/storage/logs \
-        /var/www/storage/framework/cache \
-        /var/www/storage/framework/sessions \
-        /var/www/storage/framework/views && \
+    /var/www/storage/framework/cache \
+    /var/www/storage/framework/sessions \
+    /var/www/storage/framework/views && \
     chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
     chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-EXPOSE 9000
+# ✅ CHANGEMENT ICI : port 8000 HTTP au lieu de 9000 FPM
+EXPOSE 8000
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["php-fpm"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
