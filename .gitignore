@@ -18,6 +18,9 @@ desktop.ini
 *.sql.gz
 *.dump
 
+# ── Docker override local (ne doit pas partir en production) ──────────────────
+docker-compose.override.yml
+
 # ── Fichiers temporaires / tests ──────────────────────────────────────────────
 test
 *.tmp

@@ -11,7 +11,7 @@ RUN composer install \
     --ignore-platform-reqs
 
 # ── Stage 2: Production image ─────────────────────────────────────────────────
-FROM php:8.4-fpm-alpine
+FROM php:8.2-fpm-alpine
 
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 RUN chmod +x /usr/local/bin/install-php-extensions && \
@@ -21,10 +21,6 @@ WORKDIR /var/www
 
 COPY . .
 COPY --from=vendor /app/vendor ./vendor
-
-RUN mkdir -p /var/www/storage/certs
-COPY storage/certs/ca.pem /var/www/storage/certs/ca.pem
-RUN chmod 644 /var/www/storage/certs/ca.pem
 
 RUN mkdir -p /var/www/bootstrap/cache /var/www/storage/logs \
     /var/www/storage/framework/cache \

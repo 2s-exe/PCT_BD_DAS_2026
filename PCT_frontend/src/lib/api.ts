@@ -24,10 +24,14 @@ api.interceptors.response.use(
       status === 401 ||
       (status === 403 && error.config?.url?.includes("/me"));
     if (isAuthError && typeof window !== "undefined") {
+      const isLoginPage = window.location.pathname === "/login" ||
+                          window.location.pathname === "/forgot-password";
       localStorage.removeItem("pct_token");
       localStorage.removeItem("pct_user");
       document.cookie = "pct_user=;path=/;max-age=0;SameSite=Lax";
-      window.location.href = "/login";
+      if (!isLoginPage) {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }
