@@ -28,6 +28,9 @@ else
   php artisan db:seed --class=DatabaseSeeder --force 2>/dev/null || true
 fi
 
+# Générer la documentation Swagger
+php artisan l5-swagger:generate 2>/dev/null || true
+
 # Caches Laravel (améliore les performances en production)
 php artisan config:cache
 php artisan route:cache

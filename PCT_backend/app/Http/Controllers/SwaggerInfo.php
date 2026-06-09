@@ -10,7 +10,7 @@ namespace App\Http\Controllers;
  *     @OA\Contact(email="admin@uvci.edu.ci")
  * )
  *
- * @OA\Server(url="http://localhost:8000/api/v1", description="Serveur local")
+ * @OA\Server(url=L5_SWAGGER_CONST_HOST, description="API PCT UVCI")
  *
  * @OA\SecurityScheme(
  *     securityScheme="sanctum",
