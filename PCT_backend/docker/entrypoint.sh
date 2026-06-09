@@ -19,8 +19,14 @@ echo "[entrypoint] Running migrations..."
 php artisan migrate --force
 echo "[entrypoint] Migrations OK."
 
-# Créer le compte admin initial si la table users est vide
-php artisan db:seed --class=DatabaseSeeder --force 2>/dev/null || true
+# Seed initial : DevSeeder en local, DatabaseSeeder (admin seulement) en production
+if [ "${APP_ENV}" = "local" ]; then
+  echo "[entrypoint] ENV=local — seeding données de test (DevSeeder)..."
+  php artisan db:seed --class=DevSeeder --force 2>/dev/null || true
+else
+  echo "[entrypoint] ENV=${APP_ENV} — seeding données de production (DatabaseSeeder)..."
+  php artisan db:seed --class=DatabaseSeeder --force 2>/dev/null || true
+fi
 
 # Caches Laravel (améliore les performances en production)
 php artisan config:cache

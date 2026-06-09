@@ -176,7 +176,7 @@ export default function AdminDepartements() {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={v => { if (!v) closeDialog(); }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>{editing ? "Modifier le département" : "Nouveau département"}</DialogTitle>
           </DialogHeader>

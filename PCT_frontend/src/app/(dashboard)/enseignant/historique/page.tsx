@@ -163,7 +163,7 @@ export default function EnseignantHistorique() {
 
       {/* Dialog modification */}
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>Modifier l'activité</DialogTitle>
           </DialogHeader>

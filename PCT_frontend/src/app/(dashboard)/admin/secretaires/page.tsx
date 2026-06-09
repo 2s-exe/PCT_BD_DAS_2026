@@ -355,7 +355,7 @@ function SecretaireDialog({
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) handleClose(); }}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>
             {editing ? "Modifier le secrétaire" : "Nouveau secrétaire"}

@@ -11,6 +11,7 @@ import {
   LineChart, Line, CartesianGrid,
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { downloadExport } from "@/lib/download";
 import { getErrorMessage } from "@/lib/errors";
@@ -34,6 +35,9 @@ function fmt(n: number) {
 }
 
 export default function AdminDashboard() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   const { data, isLoading } = useQuery<DashboardStats>({
     queryKey: ["dashboard-stats"],
     queryFn: () => api.get<DashboardStats>("/dashboard/stats").then(r => r.data),
@@ -113,15 +117,17 @@ export default function AdminDashboard() {
             <Badge variant="secondary">{data?.par_departement.length ?? 0} départements</Badge>
           </div>
           <div className="h-56 md:h-72">
-            <ResponsiveContainer>
-              <BarChart data={data?.par_departement ?? []} margin={{ left: -10, right: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip formatter={(v: number) => [`${v} h`, "Heures"]} />
-                <Bar dataKey="h" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {mounted && (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data?.par_departement ?? []} margin={{ left: -10, right: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} />
+                  <Tooltip formatter={(v: number) => [`${v} h`, "Heures"]} />
+                  <Bar dataKey="h" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </Card>
 
@@ -129,15 +135,17 @@ export default function AdminDashboard() {
           <h3 className="font-display font-semibold text-sm md:text-base">Évolution mensuelle</h3>
           <p className="text-xs text-muted-foreground">VHN déclarés (12 derniers mois)</p>
           <div className="h-44 md:h-56 mt-4">
-            <ResponsiveContainer>
-              <LineChart data={data?.evolution_mensuelle ?? []} margin={{ left: -10, right: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="m" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <Tooltip formatter={(v: number) => [`${v} h`, "VHN"]} />
-                <Line type="monotone" dataKey="h" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
+            {mounted && (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data?.evolution_mensuelle ?? []} margin={{ left: -10, right: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                  <XAxis dataKey="m" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} />
+                  <Tooltip formatter={(v: number) => [`${v} h`, "VHN"]} />
+                  <Line type="monotone" dataKey="h" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </Card>
       </div>

@@ -10,6 +10,7 @@ export function useAuth() {
   const { user, token, setAuth, clearAuth, isAuthenticated } = useAuthStore();
 
   const login = async (login: string, password: string) => {
+    clearAuth();
     const { data } = await api.post<AuthResponse>("/login", { login, password });
     setAuth(data.user, data.token);
     // Redirection selon le rôle

@@ -184,7 +184,7 @@ export default function AdminAnnees() {
       </Card>
 
       <Dialog open={dialogOpen} onOpenChange={v => { if (!v) closeDialog(); }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>{editing ? "Modifier l'année" : "Nouvelle année académique"}</DialogTitle>
           </DialogHeader>
