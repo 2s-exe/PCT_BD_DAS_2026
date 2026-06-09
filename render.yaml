@@ -1,0 +1,66 @@
+services:
+  # ── Backend Laravel ────────────────────────────────────────────────────────────
+  - type: web
+    name: pct-bd-das-2026
+    env: docker
+    dockerfilePath: ./PCT_backend/Dockerfile
+    dockerContext: ./PCT_backend
+    healthCheckPath: /api/health
+    autoDeploy: true
+
+    envVars:
+      # ── Application ────────────────────────────────────────────────────────────
+      - key: APP_NAME
+        value: PCT UVCI
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        value: https://pct-bd-das-2026.onrender.com
+      - key: APP_KEY
+        generateValue: true          # Render génère et persiste la clé une seule fois
+
+      # ── Base de données (à remplir dans le dashboard Render) ──────────────────
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_HOST
+        sync: false                  # Définir dans Render → Environment
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+
+      # ── Sessions / Cache / Queue (sans Redis) ─────────────────────────────────
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+
+      # ── Logs ──────────────────────────────────────────────────────────────────
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: error
+
+      # ── Mail (optionnel — remplacer par SMTP réel si besoin) ──────────────────
+      - key: MAIL_MAILER
+        value: log
+      - key: MAIL_FROM_ADDRESS
+        value: pct@uvci.edu.ci
+      - key: MAIL_FROM_NAME
+        value: PCT UVCI
+
+      # ── Frontend autorisé ─────────────────────────────────────────────────────
+      - key: FRONTEND_URL
+        value: https://pct-das-uvci.vercel.app
+
+      # ── Swagger ───────────────────────────────────────────────────────────────
+      - key: L5_SWAGGER_CONST_HOST
+        value: https://pct-bd-das-2026.onrender.com/api/v1
