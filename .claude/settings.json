@@ -2,9 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(git rm *)",
+      "Bash(git pull *)",
+      "Bash(git fetch *)",
+      "Bash(git remote *)",
+      "Bash(git stash *)",
       "Bash(docker exec *)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/api/v1/health)",
       "Bash(curl -s http://localhost:8000/api/health)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\SS238296\\Desktop\\PCT_BD_DAS_2026\\.claude"
     ]
   }
 }
