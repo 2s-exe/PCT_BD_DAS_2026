@@ -30,7 +30,7 @@ export default function Landing() {
   const [stats, setStats] = useState<PublicStats | null>(null);
 
   useEffect(() => {
-    fetch(`${API}/public-stats`, { headers: { Accept: "application/json" } })
+    fetch(`${API}/api/v1/public-stats`, { headers: { Accept: "application/json" } })
       .then(r => r.json()).then(setStats).catch(() => {});
   }, []);
 
