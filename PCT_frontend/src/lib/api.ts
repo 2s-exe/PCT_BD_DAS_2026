@@ -1,9 +1,7 @@
 import axios from "axios";
 
-const BASE = (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, "");
-
 const api = axios.create({
-  baseURL: `${BASE}/api/v1`,
+  baseURL: (process.env.NEXT_PUBLIC_API_URL ?? "").replace(/\/$/, ""),
   headers: { "Content-Type": "application/json", Accept: "application/json" },
 });
 
