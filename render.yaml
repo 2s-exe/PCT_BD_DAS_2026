@@ -24,15 +24,17 @@ services:
       # ── Base de données (à remplir dans le dashboard Render) ──────────────────
       - key: DB_CONNECTION
         value: mysql
-      - key: DB_PORT
-        value: "3306"
       - key: DB_HOST
-        sync: false                  # Définir dans Render → Environment
+        sync: false
+      - key: DB_PORT
+        value: "18191"
       - key: DB_DATABASE
         sync: false
       - key: DB_USERNAME
         sync: false
       - key: DB_PASSWORD
+        sync: false
+      - key: MYSQL_ATTR_SSL_CA
         sync: false
 
       # ── Sessions / Cache / Queue (sans Redis) ─────────────────────────────────

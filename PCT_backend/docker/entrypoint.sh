@@ -5,7 +5,7 @@ set -e
 MAX_TRIES=30
 TRIES=0
 echo "[entrypoint] Waiting for database..."
-until php -r "new PDO('mysql:host=${DB_HOST};port=${DB_PORT:-3306};dbname=${DB_DATABASE}', '${DB_USERNAME}', '${DB_PASSWORD}');" 2>/dev/null; do
+until php -r "new PDO('mysql:host=${DB_HOST};port=${DB_PORT:-18191};dbname=${DB_DATABASE}', '${DB_USERNAME}', '${DB_PASSWORD}', [PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false]);" 2>/dev/null; do
   TRIES=$((TRIES + 1))
   if [ "$TRIES" -ge "$MAX_TRIES" ]; then
     echo "[entrypoint] FATAL: database unreachable after ${MAX_TRIES} attempts — aborting."
