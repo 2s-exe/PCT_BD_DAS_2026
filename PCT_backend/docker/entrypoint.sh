@@ -40,7 +40,8 @@ fi
 php artisan l5-swagger:generate 2>/dev/null || true
 
 # ── Caches Laravel ─────────────────────────────────────────────────────────────
-php artisan config:clear`nphp artisan config:cache
+php artisan config:clear
+php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
