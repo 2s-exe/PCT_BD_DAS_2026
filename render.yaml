@@ -17,7 +17,7 @@ services:
       - key: APP_DEBUG
         value: "false"
       - key: APP_URL
-        value: https://pct-bd-das-2026.onrender.com
+        value: https://pct-bd-das-2026-516n.onrender.com
       - key: APP_KEY
         generateValue: true          # Render génère et persiste la clé une seule fois
 
@@ -65,4 +65,4 @@ services:
 
       # ── Swagger ───────────────────────────────────────────────────────────────
       - key: L5_SWAGGER_CONST_HOST
-        value: https://pct-bd-das-2026.onrender.com/api/v1
+        value: https://pct-bd-das-2026-516n.onrender.com/api/v1

@@ -22,6 +22,7 @@ return [
     'allowed_origins' => [
         // Production backend (Swagger UI same-origin + appels inter-services)
         'https://pct-bd-das-2026.onrender.com',
+        'https://pct-bd-das-2026-516n.onrender.com',
         // Frontend déployé
         'https://pct-das-uvci.vercel.app',
         // Développement local

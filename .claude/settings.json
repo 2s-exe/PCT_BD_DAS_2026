@@ -8,7 +8,10 @@
       "Bash(git stash *)",
       "Bash(docker exec *)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/api/v1/health)",
-      "Bash(curl -s http://localhost:8000/api/health)"
+      "Bash(curl -s http://localhost:8000/api/health)",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" -X POST \"https://pct-bd-das-2026-516n.onrender.com/api/v1/login\" -H \"Content-Type: application/json\" -H \"Accept: application/json\" -d '{\"login\":\"admin@uvci.edu.ci\",\"password\":\"Admin@2026\"}' --max-time 15)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\SS238296\\Desktop\\PCT_BD_DAS_2026\\.claude"
