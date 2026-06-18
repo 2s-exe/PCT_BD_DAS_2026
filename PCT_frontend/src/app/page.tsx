@@ -16,7 +16,7 @@ const NAV_LINKS = [
   { label: "Rôles",           href: "#roles" },
 ];
 
-const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
+const API = (process.env.NEXT_PUBLIC_API_URL ?? "https://pct-bd-das-2026-516n.onrender.com").replace(/\/$/, "");
 
 function fmt(n: number) {
   if (n >= 1000) return `${Math.round(n / 100) / 10} k`;

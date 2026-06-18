@@ -22,9 +22,9 @@ WORKDIR /var/www
 COPY . .
 COPY --from=vendor /app/vendor ./vendor
 
-RUN mkdir -p /var/www/storage/certs && chmod 755 /var/www/storage/certs
-
-RUN mkdir -p /var/www/bootstrap/cache /var/www/storage/logs \
+RUN mkdir -p /var/www/bootstrap/cache \
+    /var/www/storage/logs \
+    /var/www/storage/api-docs \
     /var/www/storage/framework/cache \
     /var/www/storage/framework/sessions \
     /var/www/storage/framework/views && \
@@ -34,6 +34,7 @@ RUN mkdir -p /var/www/bootstrap/cache /var/www/storage/logs \
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# PORT est injecté par Render (ou autre hébergeur) ; 8000 par défaut en local/Docker
 EXPOSE 8000
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]

@@ -1,37 +1,49 @@
 #!/bin/sh
 set -e
 
+# ── Attente DB avec timeout (évite la boucle infinie sur Render/cloud) ─────────
+MAX_TRIES=30
+TRIES=0
 echo "[entrypoint] Waiting for database..."
-until php -r "new PDO('mysql:host=${DB_HOST};port=${DB_PORT};dbname=${DB_DATABASE}', '${DB_USERNAME}', '${DB_PASSWORD}');" 2>/dev/null; do
-  echo "[entrypoint] DB not ready — retrying in 2s..."
+until php -r "new PDO('mysql:host=${DB_HOST};port=${DB_PORT:-18191};dbname=${DB_DATABASE}', '${DB_USERNAME}', '${DB_PASSWORD}', [PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false]);" 2>/dev/null; do
+  TRIES=$((TRIES + 1))
+  if [ "$TRIES" -ge "$MAX_TRIES" ]; then
+    echo "[entrypoint] FATAL: database unreachable after ${MAX_TRIES} attempts — aborting."
+    exit 1
+  fi
+  echo "[entrypoint] DB not ready (attempt ${TRIES}/${MAX_TRIES}) — retrying in 2s..."
   sleep 2
 done
 echo "[entrypoint] Database is up."
 
-# Générer APP_KEY si absent (premier démarrage sans .env injecté)
+# ── APP_KEY (premier démarrage sans .env injecté) ───────────────────────────────
 if [ -z "$APP_KEY" ]; then
-  echo "[entrypoint] APP_KEY manquant — génération automatique..."
+  echo "[entrypoint] APP_KEY missing — generating..."
   php artisan key:generate --force
 fi
 
-# Appliquer les migrations (idempotent — ne touche pas aux données existantes)
+# ── Migrations (idempotent) ─────────────────────────────────────────────────────
 echo "[entrypoint] Running migrations..."
 php artisan migrate --force
 echo "[entrypoint] Migrations OK."
 
-# Seed initial : DevSeeder en local, DatabaseSeeder (admin seulement) en production
+# ── Seed initial ────────────────────────────────────────────────────────────────
 if [ "${APP_ENV}" = "local" ]; then
-  echo "[entrypoint] ENV=local — seeding données de test (DevSeeder)..."
+  echo "[entrypoint] ENV=local — seeding test data (DevSeeder)..."
   php artisan db:seed --class=DevSeeder --force 2>/dev/null || true
 else
-  echo "[entrypoint] ENV=${APP_ENV} — seeding données de production (DatabaseSeeder)..."
+  echo "[entrypoint] ENV=${APP_ENV} — seeding production data (DatabaseSeeder)..."
   php artisan db:seed --class=DatabaseSeeder --force 2>/dev/null || true
 fi
 
-# Caches Laravel (améliore les performances en production)
+# ── Documentation Swagger ───────────────────────────────────────────────────────
+php artisan l5-swagger:generate 2>/dev/null || true
+
+# ── Caches Laravel ─────────────────────────────────────────────────────────────
+php artisan config:clear
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-echo "[entrypoint] Starting PHP-FPM..."
+echo "[entrypoint] Starting server on port ${PORT:-8000}..."
 exec "$@"

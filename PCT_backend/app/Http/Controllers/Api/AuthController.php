@@ -6,19 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use OpenApi\Attributes as OA;
 
-#[OA\Info(
-    title: "PCT UVCI — API REST",
-    version: "1.0.0",
-    description: "API de gestion des activités pédagogiques et volumes horaires — UVCI"
-)]
-#[OA\Server(url: "http://localhost:8000/api/v1", description: "Serveur local")]
-#[OA\SecurityScheme(
-    securityScheme: "sanctum",
-    type: "http",
-    scheme: "bearer",
-    bearerFormat: "Token",
-    description: "Token obtenu via POST /login. Format : Bearer {token}"
-)]
 class AuthController extends Controller
 {
     #[OA\Post(

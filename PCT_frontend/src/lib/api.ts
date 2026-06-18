@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE = (process.env.NEXT_PUBLIC_API_URL ?? "https://pct-das-2026.onrender.com").replace(/\/$/, "");
+const BASE = (process.env.NEXT_PUBLIC_API_URL ?? "https://pct-bd-das-2026-516n.onrender.com").replace(/\/$/, "");
 
 const api = axios.create({
   baseURL: `${BASE}/api/v1`,
