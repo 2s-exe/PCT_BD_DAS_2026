@@ -23,7 +23,6 @@ const HEURES_PAR_GRADE: Record<string, number> = {
   "Enseignant-Chercheur":  360,
   "Maitre-de-Conferences": 150,
   "Professeur-Titulaire":  150,
-  "Professeur":            150,
 };
 
 const GRADE_LABEL: Record<string, string> = {
@@ -196,7 +195,7 @@ export default function AdminHeures() {
         <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />Quota atteint</div>
         <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />Heures supplémentaires</div>
         <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-muted-foreground/40 inline-block" />Quota non atteint</div>
-        <div className="ml-auto">Quotas : Assistant/M.-Assistant 240h · Ens. Chercheur 360h · Maître de Conf./Pr. Titulaire 150h</div>
+        <div className="ml-auto">Quotas : Assistant / M.-Assistant 240h · Ens. Chercheur 360h · Maître de Conf. / Pr. Titulaire 150h</div>
       </div>
     </AppShell>
   );

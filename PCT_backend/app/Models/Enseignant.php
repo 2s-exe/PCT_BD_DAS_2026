@@ -13,11 +13,10 @@ class Enseignant extends Model
         'Enseignant-Chercheur'  => 360,
         'Maitre-de-Conferences' => 150,
         'Professeur-Titulaire'  => 150,
-        'Professeur'            => 150,
     ];
 
     public const GRADES = [
-        'Assistant', 'Maitre-Assistant', 'Professeur',
+        'Assistant', 'Maitre-Assistant',
         'Enseignant-Chercheur', 'Maitre-de-Conferences', 'Professeur-Titulaire',
     ];
 

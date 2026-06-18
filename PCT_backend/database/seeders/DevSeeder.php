@@ -92,7 +92,7 @@ class DevSeeder extends Seeder
             [
                 'enseignant' => [
                     'nom' => 'Diallo', 'prenom' => 'Boubacar', 'email' => 'b.diallo@uvci.edu.ci',
-                    'grade' => 'Professeur', 'statut' => 'Permanent', 'taux_horaire' => 8000,
+                    'grade' => 'Professeur-Titulaire', 'statut' => 'Permanent', 'taux_horaire' => 8000,
                     'departement' => 'Mathématiques',
                 ],
             ],
@@ -113,7 +113,7 @@ class DevSeeder extends Seeder
             [
                 'enseignant' => [
                     'nom' => 'Bamba', 'prenom' => 'Seydou', 'email' => 's.bamba@uvci.edu.ci',
-                    'grade' => 'Professeur', 'statut' => 'Permanent', 'taux_horaire' => 8000,
+                    'grade' => 'Professeur-Titulaire', 'statut' => 'Permanent', 'taux_horaire' => 8000,
                     'departement' => 'Informatique',
                 ],
             ],

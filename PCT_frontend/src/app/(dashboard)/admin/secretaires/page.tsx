@@ -285,6 +285,7 @@ export default function AdminSecretaires() {
 
       {/* Dialog création / édition */}
       <SecretaireDialog
+        key={dialogOpen ? (editing ? `edit-${editing.id}` : "new") : "closed"}
         open={dialogOpen}
         onClose={() => { setDialogOpen(false); setEditing(null); }}
         editing={editing}

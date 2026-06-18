@@ -223,6 +223,7 @@ export default function AdminCours() {
       </Card>
 
       <CoursDialog
+        key={dialogOpen ? (editing ? `edit-${editing.id}` : "new") : "closed"}
         open={dialogOpen}
         onClose={closeDialog}
         editing={editing}
