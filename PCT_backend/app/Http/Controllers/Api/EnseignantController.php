@@ -50,7 +50,7 @@ class EnseignantController extends Controller
     {
         $data = $request->validate([
             'nom'=>'required','prenom'=>'required','email'=>'required|email|ends_with:@uvci.edu.ci|unique:enseignants|unique:users,email|unique:users,login',
-            'telephone'=>'nullable','grade'=>'required|in:Assistant,Maitre-Assistant,Professeur',
+            'telephone'=>'nullable','grade'=>'required|in:Assistant,Maitre-Assistant,Professeur,Enseignant-Chercheur,Maitre-de-Conferences,Professeur-Titulaire',
             'statut'=>'required|in:Permanent,Vacataire','taux_horaire'=>'required|numeric|min:0',
             'departement_id'=>'nullable|exists:departements,id',
             'login'=>'nullable|string|unique:users,login','password'=>'nullable|min:6',
@@ -107,7 +107,7 @@ class EnseignantController extends Controller
         $data = $request->validate([
             'nom'=>'sometimes|required','prenom'=>'sometimes|required',
             'email'=>'sometimes|required|email|ends_with:@uvci.edu.ci|unique:enseignants,email,'.$enseignant->id,
-            'telephone'=>'nullable','grade'=>'sometimes|in:Assistant,Maitre-Assistant,Professeur',
+            'telephone'=>'nullable','grade'=>'sometimes|in:Assistant,Maitre-Assistant,Professeur,Enseignant-Chercheur,Maitre-de-Conferences,Professeur-Titulaire',
             'statut'=>'sometimes|in:Permanent,Vacataire','taux_horaire'=>'sometimes|numeric|min:0',
             'departement_id'=>'nullable|exists:departements,id','login'=>'nullable|string','password'=>'nullable|min:6',
         ]);
@@ -163,7 +163,7 @@ class EnseignantController extends Controller
                 'nom'          => 'required|string',
                 'prenom'       => 'required|string',
                 'email'        => 'required|email|ends_with:@uvci.edu.ci|unique:enseignants|unique:users,email|unique:users,login',
-                'grade'        => 'required|in:Assistant,Maitre-Assistant,Professeur',
+                'grade'        => 'required|in:Assistant,Maitre-Assistant,Professeur,Enseignant-Chercheur,Maitre-de-Conferences,Professeur-Titulaire',
                 'statut'       => 'required|in:Permanent,Vacataire',
                 'taux_horaire' => 'required|numeric|min:0',
             ]);

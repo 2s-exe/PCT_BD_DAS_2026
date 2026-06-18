@@ -48,7 +48,7 @@ const enseignantSchema = z.object({
   prenom:            z.string().min(2, "Minimum 2 caractères"),
   email:             z.string().email("Email invalide").refine(v => v.endsWith("@uvci.edu.ci"), "Doit être une adresse @uvci.edu.ci"),
   telephone:         z.string().optional(),
-  grade:             z.enum(["Assistant", "Maitre-Assistant", "Professeur"]),
+  grade:             z.enum(["Assistant", "Maitre-Assistant", "Professeur", "Enseignant-Chercheur", "Maitre-de-Conferences", "Professeur-Titulaire"]),
   statut:            z.enum(["Permanent", "Vacataire"]),
   taux_horaire:      z.coerce.number().min(0, "Valeur positive requise"),
   departement_id:    z.string().min(1, "Sélectionnez un département"),
@@ -422,9 +422,12 @@ function EnseignantDialog({
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger><SelectValue placeholder="Choisir le grade" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Assistant">Assistant</SelectItem>
-                    <SelectItem value="Maitre-Assistant">Maître-Assistant</SelectItem>
-                    <SelectItem value="Professeur">Professeur</SelectItem>
+                    <SelectItem value="Assistant">Assistant (240h/an)</SelectItem>
+                    <SelectItem value="Maitre-Assistant">Maître-Assistant (240h/an)</SelectItem>
+                    <SelectItem value="Enseignant-Chercheur">Enseignant-Chercheur (360h/an)</SelectItem>
+                    <SelectItem value="Maitre-de-Conferences">Maître de Conférences (150h/an)</SelectItem>
+                    <SelectItem value="Professeur-Titulaire">Professeur Titulaire (150h/an)</SelectItem>
+                    <SelectItem value="Professeur">Professeur (150h/an)</SelectItem>
                   </SelectContent>
                 </Select>
               )} />

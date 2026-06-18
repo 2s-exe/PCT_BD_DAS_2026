@@ -106,7 +106,7 @@ class DevSeeder extends Seeder
             [
                 'enseignant' => [
                     'nom' => 'Kouamé', 'prenom' => 'Jean', 'email' => 'j.kouame@uvci.edu.ci',
-                    'grade' => 'Maitre de Conférences', 'statut' => 'Permanent', 'taux_horaire' => 6500,
+                    'grade' => 'Maitre-de-Conferences', 'statut' => 'Permanent', 'taux_horaire' => 6500,
                     'departement' => 'Sciences Économiques',
                 ],
             ],

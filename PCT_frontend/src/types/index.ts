@@ -29,7 +29,8 @@ export interface Enseignant {
   nom_complet: string;
   email: string;
   telephone?: string;
-  grade: "Assistant" | "Maitre-Assistant" | "Professeur";
+  grade: "Assistant" | "Maitre-Assistant" | "Professeur" | "Enseignant-Chercheur" | "Maitre-de-Conferences" | "Professeur-Titulaire";
+  heures_annuelles?: number;
   statut: "Permanent" | "Vacataire";
   taux_horaire: number;
   actif: boolean;
