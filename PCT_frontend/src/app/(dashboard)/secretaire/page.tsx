@@ -22,8 +22,9 @@ interface DashboardStats {
   };
 }
 
-function fmt(n: number) {
-  return n >= 1000 ? `${(n / 1000).toFixed(1)} k` : String(n);
+function fmt(n: unknown) {
+  const num = Number(n) || 0;
+  return num >= 1000 ? `${(num / 1000).toFixed(1)} k` : String(num);
 }
 
 export default function SecretaireDashboard() {
