@@ -11,7 +11,8 @@
       "Bash(curl -s http://localhost:8000/api/health)",
       "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" -X POST \"https://pct-bd-das-2026-516n.onrender.com/api/v1/login\" -H \"Content-Type: application/json\" -H \"Accept: application/json\" -d '{\"login\":\"admin@uvci.edu.ci\",\"password\":\"Admin@2026\"}' --max-time 15)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "PowerShell(docker compose up --build -d frontend 2>&1)"
     ],
     "additionalDirectories": [
       "C:\\Users\\SS238296\\Desktop\\PCT_BD_DAS_2026\\.claude"
