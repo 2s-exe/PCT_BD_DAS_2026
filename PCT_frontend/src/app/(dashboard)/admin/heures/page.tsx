@@ -39,8 +39,10 @@ function fmt(n: unknown) {
   return num >= 1000 ? `${(num / 1000).toFixed(1)} k` : num.toFixed(2).replace(/\.00$/, "");
 }
 
-function getQuota(grade?: string): number {
-  return grade ? (HEURES_PAR_GRADE[grade] ?? 240) : 240;
+function getQuota(v: VolumeHoraire): number {
+  const fromApi = Number(v.heures_prevues);
+  if (fromApi > 0) return fromApi;
+  return v.enseignant?.grade ? (HEURES_PAR_GRADE[v.enseignant.grade] ?? 240) : 240;
 }
 
 export default function AdminHeures() {
@@ -55,12 +57,12 @@ export default function AdminHeures() {
   const totalValide   = rows.filter(v => v.validation?.statut_validation === "valide")
                             .reduce((s, v) => s + (Number(v.heures_realisees) || 0), 0);
   const totalSupp     = rows.reduce((s, v) => {
-    const quota    = getQuota(v.enseignant?.grade);
+    const quota    = getQuota(v);
     const realise  = Number(v.heures_realisees) || 0;
     return s + Math.max(0, realise - quota);
   }, 0);
   const nbDepasse = rows.filter(v => {
-    const quota = getQuota(v.enseignant?.grade);
+    const quota = getQuota(v);
     return (Number(v.heures_realisees) || 0) > quota;
   }).length;
 
@@ -107,7 +109,7 @@ export default function AdminHeures() {
               </TableHeader>
               <TableBody>
                 {rows.map((v) => {
-                  const quota    = getQuota(v.enseignant?.grade);
+                  const quota    = getQuota(v);
                   const realise  = Number(v.heures_realisees) || 0;
                   const supp     = Math.max(0, realise - quota);
                   const pct      = Math.min(100, Math.round((realise / quota) * 100));

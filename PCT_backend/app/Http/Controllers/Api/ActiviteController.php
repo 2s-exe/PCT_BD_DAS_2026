@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ActivitePedagogique;
 use App\Models\Attribution;
+use App\Models\Enseignant;
 use App\Models\ParametreCalcul;
 use App\Models\VolumeHoraire;
 use Illuminate\Http\Request;
@@ -136,20 +137,21 @@ class ActiviteController extends Controller
 
     private function syncVolume(int $attributionId, int $anneeId): void
     {
-        $attribution = Attribution::find($attributionId);
+        $attribution = Attribution::with('enseignant')->find($attributionId);
         if (!$attribution) return;
 
         $enseignantId = $attribution->enseignant_id;
+        $enseignant   = $attribution->enseignant;
 
         // Somme des VHN non rejetés pour cet enseignant / cette année
         $heuresRealisees = ActivitePedagogique::whereHas(
             'attribution', fn($q) => $q->where('enseignant_id', $enseignantId)
         )->where('annee_id', $anneeId)->where('statut', '!=', 'rejete')->sum('volume_horaire');
 
-        // Charge prévue = somme des charges de toutes ses attributions sur cette année
-        $heuresPrevues = Attribution::where('enseignant_id', $enseignantId)
-            ->where('annee_id', $anneeId)
-            ->sum('charge_horaire');
+        // Quota annuel automatique selon le grade (référentiel UVCI)
+        $heuresPrevues = $enseignant
+            ? (Enseignant::HEURES_PAR_GRADE[$enseignant->grade] ?? 240)
+            : 240;
 
         VolumeHoraire::updateOrCreate(
             ['enseignant_id' => $enseignantId, 'annee_id' => $anneeId],

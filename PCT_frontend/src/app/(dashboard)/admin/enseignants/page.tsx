@@ -193,6 +193,7 @@ export default function AdminEnseignants() {
                   <TableHead>Enseignant</TableHead>
                   <TableHead className="hidden md:table-cell">Grade</TableHead>
                   <TableHead className="hidden lg:table-cell">Département</TableHead>
+                  <TableHead className="hidden md:table-cell text-right">Quota annuel</TableHead>
                   <TableHead className="hidden sm:table-cell">Taux horaire</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="w-12" />
@@ -217,6 +218,9 @@ export default function AdminEnseignants() {
                     </TableCell>
                     <TableCell className="text-sm hidden md:table-cell">{t.grade}</TableCell>
                     <TableCell className="text-sm hidden lg:table-cell">{t.departement?.nom_departement ?? "—"}</TableCell>
+                    <TableCell className="text-sm font-medium hidden md:table-cell text-right">
+                      {t.heures_annuelles ?? "—"}h/an
+                    </TableCell>
                     <TableCell className="text-sm font-medium hidden sm:table-cell">
                       {t.taux_horaire.toLocaleString()} FCFA/h
                     </TableCell>
@@ -261,7 +265,7 @@ export default function AdminEnseignants() {
                 ))}
                 {rows.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                       Aucun enseignant trouvé
                     </TableCell>
                   </TableRow>
