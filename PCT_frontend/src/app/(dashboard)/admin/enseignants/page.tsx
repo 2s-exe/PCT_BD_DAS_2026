@@ -288,8 +288,8 @@ export default function AdminEnseignants() {
         }
         isLoading={createMutation.isPending || updateMutation.isPending}
         error={
-          (createMutation.error || updateMutation.error) instanceof Error
-            ? (createMutation.error ?? updateMutation.error)!.message
+          createMutation.error || updateMutation.error
+            ? getErrorMessage(createMutation.error ?? updateMutation.error)
             : null
         }
       />
@@ -366,10 +366,8 @@ function EnseignantDialog({
   }, [defaultValues, reset]);
 
   useEffect(() => {
-    if (!editing) {
-      setValue("login", email ?? "");
-    }
-  }, [email, editing, setValue]);
+    setValue("login", email ?? "");
+  }, [email, setValue]);
 
   useEffect(() => {
     if (open && !editing && !passwordInitialized) {

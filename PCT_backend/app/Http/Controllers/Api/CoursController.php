@@ -39,6 +39,16 @@ class CoursController extends Controller
         return $cour;
     }
 
-    #[OA\Delete(path:"/cours/{id}",tags:["Cours"],summary:"Supprimer",security:[["sanctum" => []]],parameters:[new OA\Parameter(name:"id",in:"path",required:true,schema:new OA\Schema(type:"integer"))],responses:[new OA\Response(response:204,description:"Supprimé")])]
-    public function destroy(Cours $cour) { $cour->delete(); return response()->json(null,204); }
+    #[OA\Delete(path:"/cours/{id}",tags:["Cours"],summary:"Supprimer",security:[["sanctum" => []]],parameters:[new OA\Parameter(name:"id",in:"path",required:true,schema:new OA\Schema(type:"integer"))],responses:[new OA\Response(response:204,description:"Supprimé"),new OA\Response(response:422,description:"Données liées")])]
+    public function destroy(Cours $cour)
+    {
+        $count = $cour->attributions()->count();
+        if ($count > 0) {
+            return response()->json([
+                'message' => "Impossible de supprimer : ce cours est utilisé dans {$count} attribution(s). Supprimez d'abord les attributions concernées.",
+            ], 422);
+        }
+        $cour->delete();
+        return response()->json(null, 204);
+    }
 }

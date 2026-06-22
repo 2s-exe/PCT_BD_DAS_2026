@@ -19,10 +19,23 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
-    // 401 = token invalide/expiré, 403 sur /me = session corrompue
+
+    // 403 sur une route admin = token périmé ou mauvais compte → forcer le login
+    const storedRole = (() => {
+      try {
+        const raw = typeof window !== "undefined" ? localStorage.getItem("pct_user") : null;
+        return raw ? (JSON.parse(raw)?.state?.user?.role ?? null) : null;
+      } catch { return null; }
+    })();
+
+    // 401 = token invalide/expiré
+    // 403 sur /me = session corrompue
+    // 403 avec rôle admin stocké = token ne correspond plus au rôle → reconnecter
     const isAuthError =
       status === 401 ||
-      (status === 403 && error.config?.url?.includes("/me"));
+      (status === 403 && error.config?.url?.includes("/me")) ||
+      (status === 403 && storedRole === "admin");
+
     if (isAuthError && typeof window !== "undefined") {
       const isLoginPage = window.location.pathname === "/login" ||
                           window.location.pathname === "/forgot-password";

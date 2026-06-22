@@ -33,8 +33,23 @@ class AnneeController extends Controller
         return $annee;
     }
 
-    #[OA\Delete(path:"/annees/{id}",tags:["Années"],summary:"Supprimer",security:[["sanctum" => []]],parameters:[new OA\Parameter(name:"id",in:"path",required:true,schema:new OA\Schema(type:"integer"))],responses:[new OA\Response(response:204,description:"Supprimé")])]
-    public function destroy(AnneeAcademique $annee) { $annee->delete(); return response()->json(null,204); }
+    #[OA\Delete(path:"/annees/{id}",tags:["Années"],summary:"Supprimer",security:[["sanctum" => []]],parameters:[new OA\Parameter(name:"id",in:"path",required:true,schema:new OA\Schema(type:"integer"))],responses:[new OA\Response(response:204,description:"Supprimé"),new OA\Response(response:422,description:"Données liées")])]
+    public function destroy(AnneeAcademique $annee)
+    {
+        if ($annee->active) {
+            return response()->json([
+                'message' => "Impossible de supprimer l'année académique active. Activez une autre année d'abord.",
+            ], 422);
+        }
+        $attrCount = $annee->attributions()->count();
+        if ($attrCount > 0) {
+            return response()->json([
+                'message' => "Impossible de supprimer : cette année contient {$attrCount} attribution(s) et toutes les activités associées. Supprimez d'abord les attributions.",
+            ], 422);
+        }
+        $annee->delete();
+        return response()->json(null, 204);
+    }
 
     #[OA\Patch(path:"/annees/{id}/activer",tags:["Années"],summary:"Définir comme année active",security:[["sanctum" => []]],parameters:[new OA\Parameter(name:"id",in:"path",required:true,schema:new OA\Schema(type:"integer"))],responses:[new OA\Response(response:200,description:"Activée")])]
     public function activer(AnneeAcademique $annee) {

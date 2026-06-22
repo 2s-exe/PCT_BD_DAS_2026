@@ -24,18 +24,21 @@ Chaque activité pédagogique est caractérisée par deux dimensions :
 
 La combinaison de ces deux dimensions donne le **coefficient VHN** stocké dans la table `parametres_calcul`.
 
-### Coefficients par défaut (seeds)
+### Coefficients officiels — Annexes 1 & 2 du référentiel UVCI
 
-| Type d'opération | Niveau de complexité | Coefficient VHN (h) |
-|---|---|---|
-| `creation` | `simple` | **1,0 h** |
-| `creation` | `intermediaire` | **2,0 h** |
-| `creation` | `complexe` | **3,0 h** |
-| `mise_a_jour` | `simple` | **0,5 h** |
-| `mise_a_jour` | `intermediaire` | **1,0 h** |
-| `mise_a_jour` | `complexe` | **1,5 h** |
+Formule : **Vhtc = Ic × S** (Ic = coefficient par séquence, S = nombre de séquences)
 
-> Ces valeurs sont modifiables par l'administrateur via la page **Paramètres** (`/admin/parametres`).
+| Type d'opération | Niveau | Libellé | Coefficient VHN (h) |
+|---|---|---|---|
+| `creation` | `simple` | Conception – Niveau 1 | **8,0 h** |
+| `creation` | `intermediaire` | Conception – Niveau 2 | **15,0 h** |
+| `creation` | `complexe` | Conception – Niveau 3 | **30,0 h** |
+| `mise_a_jour` | `simple` | Mise à jour – Niveau 1 | **4,0 h** |
+| `mise_a_jour` | `intermediaire` | Mise à jour – Niveau 2 | **7,5 h** |
+| `mise_a_jour` | `complexe` | Mise à jour – Niveau 3 | **15,0 h** |
+
+> Ces valeurs sont modifiables par l'administrateur via la page **Paramètres** (`/admin/parametres`).  
+> Le seeder utilise `updateOrCreate` pour corriger les bases déjà déployées lors d'un re-seed.
 
 ---
 
@@ -65,9 +68,7 @@ La table `volumes_horaires` contient **une ligne par enseignant par année acad�
 
 ```
 heures_prevues =
-  SUM(attributions.charge_horaire)
-  WHERE attributions.enseignant_id = {enseignant}
-    AND attributions.annee_id      = {annee}
+  HEURES_PAR_GRADE[enseignant.grade]   ← quota annuel fixe par grade (référentiel UVCI)
 
 heures_realisees =
   SUM(activites_pedagogiques.volume_horaire)
@@ -79,6 +80,17 @@ heures_complementaires =
   MAX(0, heures_realisees − heures_prevues)
 ```
 
+#### Quotas annuels par grade (UVCI)
+
+| Grade | Heures prévues / an |
+|---|---|
+| Assistant | **240 h** |
+| Maître-Assistant | **240 h** |
+| Enseignant-Chercheur | **360 h** |
+| Maître de Conférences | **150 h** |
+| Professeur Titulaire | **150 h** |
+
+> Les `heures_prevues` sont donc **indépendantes des attributions** : elles reflètent le quota statutaire de l'enseignant, pas sa charge de cours.  
 > Les activités au statut `rejete` sont **exclues** des heures réalisées.  
 > Les heures complémentaires ne peuvent pas être négatives.
 
@@ -90,6 +102,7 @@ heures_complementaires =
 - la **modification** d'une activité (`update`)
 - la **suppression** d'une activité (`destroy`)
 - le **changement de statut** d'une activité (`validerStatut` : validé / rejeté / remis en attente)
+- le **changement de grade** de l'enseignant (via `EnseignantObserver` → recalcul de `heures_prevues` sur tous ses volumes)
 
 ---
 
@@ -125,8 +138,8 @@ Secrétaire/Admin valide le Volume global
 ## 6. Structure des données
 
 ```
-attributions
-  └─ charge_horaire          ← heures planifiées par cours
+enseignants
+  └─ grade                   ← 'Assistant' | 'Maitre-Assistant' | ...
 
 activites_pedagogiques
   ├─ type_operation          ← 'creation' | 'mise_a_jour'
@@ -137,12 +150,12 @@ activites_pedagogiques
   └─ annee_id                 │
                               │ clés utilisées par syncVolume()
 parametres_calcul             │
-  ├─ type_operation           │
-  ├─ niveau_complexite        │
-  └─ coefficient_vhn          │
+  ├─ type_operation           │   Conception N1=8h, N2=15h, N3=30h
+  ├─ niveau_complexite        │   Mise à jour N1=4h, N2=7.5h, N3=15h
+  └─ coefficient_vhn          │   (référentiel UVCI Annexes 1 & 2)
                               │
 volumes_horaires  ◄───────────┘
-  ├─ heures_prevues           ← SUM(charge_horaire)
+  ├─ heures_prevues           ← HEURES_PAR_GRADE[enseignant.grade]
   ├─ heures_realisees         ← SUM(volume_horaire) hors rejetées
   ├─ heures_complementaires   ← MAX(0, réalisées − prévues)
   ├─ enseignant_id
@@ -158,8 +171,12 @@ volumes_horaires  ◄───────────┘
 | Migration `volumes_horaires` | [`PCT_backend/database/migrations/2026_06_03_000654_create_volumes_horaires_table.php`](PCT_backend/database/migrations/2026_06_03_000654_create_volumes_horaires_table.php) |
 | Migration `activites_pedagogiques` | [`PCT_backend/database/migrations/2026_06_03_000654_create_activites_pedagogiques_table.php`](PCT_backend/database/migrations/2026_06_03_000654_create_activites_pedagogiques_table.php) |
 | Migration `parametres_calcul` | [`PCT_backend/database/migrations/2026_06_03_000655_create_parametres_calcul_table.php`](PCT_backend/database/migrations/2026_06_03_000655_create_parametres_calcul_table.php) |
-| Coefficients par défaut (seeds) | [`PCT_backend/database/seeders/DatabaseSeeder.php`](PCT_backend/database/seeders/DatabaseSeeder.php) lignes 39–52 |
-| Calcul VHN + `syncVolume()` | [`PCT_backend/app/Http/Controllers/Api/ActiviteController.php`](PCT_backend/app/Http/Controllers/Api/ActiviteController.php) |
+| Migration correctif coefficients VHN | [`PCT_backend/database/migrations/…fix_coefficients_vhn_referentiel_uvci.php`](PCT_backend/database/migrations/) |
+| Migration backfill `heures_prevues` | [`PCT_backend/database/migrations/…backfill_heures_prevues_from_grade.php`](PCT_backend/database/migrations/) |
+| Coefficients officiels (seeds) | [`PCT_backend/database/seeders/DatabaseSeeder.php`](PCT_backend/database/seeders/DatabaseSeeder.php) |
+| Quotas par grade + `syncVolume()` | [`PCT_backend/app/Http/Controllers/Api/ActiviteController.php`](PCT_backend/app/Http/Controllers/Api/ActiviteController.php) |
+| Constante `HEURES_PAR_GRADE` | [`PCT_backend/app/Models/Enseignant.php`](PCT_backend/app/Models/Enseignant.php) |
+| Observer (recalcul si grade change) | [`PCT_backend/app/Observers/EnseignantObserver.php`](PCT_backend/app/Observers/EnseignantObserver.php) |
 | Validation du volume global | [`PCT_backend/app/Http/Controllers/Api/VolumeController.php`](PCT_backend/app/Http/Controllers/Api/VolumeController.php) |
 | Dashboard enseignant | [`PCT_backend/app/Http/Controllers/Api/DashboardController.php`](PCT_backend/app/Http/Controllers/Api/DashboardController.php) |
 | Modèle `VolumeHoraire` | [`PCT_backend/app/Models/VolumeHoraire.php`](PCT_backend/app/Models/VolumeHoraire.php) |

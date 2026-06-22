@@ -6,9 +6,11 @@ import type { User } from "@/types";
 interface AuthState {
   user: User | null;
   token: string | null;
+  _hasHydrated: boolean;
   setAuth: (user: User, token: string) => void;
   clearAuth: () => void;
   isAuthenticated: () => boolean;
+  setHasHydrated: (v: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -16,6 +18,8 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       token: null,
+      _hasHydrated: false,
+      setHasHydrated: (v) => set({ _hasHydrated: v }),
       setAuth: (user, token) => {
         localStorage.setItem("pct_token", token);
         // Sync a cookie so Next.js middleware (Edge runtime) can read auth state
@@ -31,6 +35,12 @@ export const useAuthStore = create<AuthState>()(
       },
       isAuthenticated: () => !!get().token,
     }),
-    { name: "pct_user", partialize: (s) => ({ user: s.user, token: s.token }) }
+    {
+      name: "pct_user",
+      partialize: (s) => ({ user: s.user, token: s.token }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
+    }
   )
 );

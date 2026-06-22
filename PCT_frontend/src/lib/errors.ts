@@ -4,6 +4,12 @@ import type { AxiosError } from "axios";
 export function getErrorMessage(error: unknown): string {
   const axiosErr = error as AxiosError<{ message?: string; errors?: Record<string, string[]> }>;
 
+  const status = axiosErr?.response?.status;
+
+  if (status === 403) {
+    return "Accès refusé. Votre session a peut-être expiré — reconnectez-vous avec un compte administrateur.";
+  }
+
   if (axiosErr?.response?.data?.message) {
     return axiosErr.response.data.message;
   }

@@ -128,6 +128,12 @@ class EnseignantController extends Controller
     )]
     public function destroy(Enseignant $enseignant)
     {
+        $attrCount = $enseignant->attributions()->count();
+        if ($attrCount > 0) {
+            return response()->json([
+                'message' => "Impossible de supprimer : cet enseignant a {$attrCount} attribution(s) et des activités associées. Supprimez d'abord ses attributions.",
+            ], 422);
+        }
         // Supprimer le compte utilisateur associé avant l'enseignant
         $enseignant->user?->tokens()->delete();
         $enseignant->user?->delete();

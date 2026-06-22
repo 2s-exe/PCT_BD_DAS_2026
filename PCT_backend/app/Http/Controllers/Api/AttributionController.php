@@ -43,6 +43,16 @@ class AttributionController extends Controller
         return $attribution->load(['enseignant','cours','annee']);
     }
 
-    #[OA\Delete(path:"/attributions/{id}",tags:["Attributions"],summary:"Supprimer",security:[["sanctum" => []]],parameters:[new OA\Parameter(name:"id",in:"path",required:true,schema:new OA\Schema(type:"integer"))],responses:[new OA\Response(response:204,description:"Supprimé")])]
-    public function destroy(Attribution $attribution) { $attribution->delete(); return response()->json(null,204); }
+    #[OA\Delete(path:"/attributions/{id}",tags:["Attributions"],summary:"Supprimer",security:[["sanctum" => []]],parameters:[new OA\Parameter(name:"id",in:"path",required:true,schema:new OA\Schema(type:"integer"))],responses:[new OA\Response(response:204,description:"Supprimé"),new OA\Response(response:422,description:"Données liées")])]
+    public function destroy(Attribution $attribution)
+    {
+        $count = $attribution->activites()->count();
+        if ($count > 0) {
+            return response()->json([
+                'message' => "Impossible de supprimer : cette attribution contient {$count} activité(s) déclarée(s). Supprimez d'abord les activités.",
+            ], 422);
+        }
+        $attribution->delete();
+        return response()->json(null, 204);
+    }
 }
