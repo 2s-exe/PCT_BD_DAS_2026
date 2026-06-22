@@ -35,17 +35,20 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // ── Paramètres VHN (coefficients requis par l'application) ───────────────
+        // ── Paramètres VHN — Annexe 1 & 2 du référentiel UVCI ──────────────────
+        // Vhtc = Ic × S  (Ic = coefficient par séquence, S = nombre de séquences)
+        // Conception : Niveau 1 = 8h, Niveau 2 = 15h, Niveau 3 = 30h
+        // Mise à jour : Niveau 1 = 4h, Niveau 2 = 7.5h, Niveau 3 = 15h
         $params = [
-            ['type_operation' => 'creation',    'niveau_complexite' => 'simple',        'coefficient_vhn' => 1.0, 'description' => 'Création simple'],
-            ['type_operation' => 'creation',    'niveau_complexite' => 'intermediaire',  'coefficient_vhn' => 2.0, 'description' => 'Création intermédiaire'],
-            ['type_operation' => 'creation',    'niveau_complexite' => 'complexe',       'coefficient_vhn' => 3.0, 'description' => 'Création complexe'],
-            ['type_operation' => 'mise_a_jour', 'niveau_complexite' => 'simple',        'coefficient_vhn' => 0.5, 'description' => 'Mise à jour simple'],
-            ['type_operation' => 'mise_a_jour', 'niveau_complexite' => 'intermediaire',  'coefficient_vhn' => 1.0, 'description' => 'Mise à jour intermédiaire'],
-            ['type_operation' => 'mise_a_jour', 'niveau_complexite' => 'complexe',       'coefficient_vhn' => 1.5, 'description' => 'Mise à jour complexe'],
+            ['type_operation' => 'creation',    'niveau_complexite' => 'simple',        'coefficient_vhn' =>  8.0,  'description' => 'Conception – Niveau 1 (simple)'],
+            ['type_operation' => 'creation',    'niveau_complexite' => 'intermediaire',  'coefficient_vhn' => 15.0,  'description' => 'Conception – Niveau 2 (intermédiaire)'],
+            ['type_operation' => 'creation',    'niveau_complexite' => 'complexe',       'coefficient_vhn' => 30.0,  'description' => 'Conception – Niveau 3 (complexe)'],
+            ['type_operation' => 'mise_a_jour', 'niveau_complexite' => 'simple',        'coefficient_vhn' =>  4.0,  'description' => 'Mise à jour – Niveau 1 (simple)'],
+            ['type_operation' => 'mise_a_jour', 'niveau_complexite' => 'intermediaire',  'coefficient_vhn' =>  7.5,  'description' => 'Mise à jour – Niveau 2 (intermédiaire)'],
+            ['type_operation' => 'mise_a_jour', 'niveau_complexite' => 'complexe',       'coefficient_vhn' => 15.0,  'description' => 'Mise à jour – Niveau 3 (complexe)'],
         ];
         foreach ($params as $p) {
-            ParametreCalcul::firstOrCreate(
+            ParametreCalcul::updateOrCreate(
                 ['type_operation' => $p['type_operation'], 'niveau_complexite' => $p['niveau_complexite']],
                 $p
             );
